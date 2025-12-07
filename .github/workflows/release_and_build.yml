@@ -41,7 +41,7 @@ jobs:
       - name: 📦 Install Semantic-Release Dependencies
         # Installs all semantic-release plugins from package.json
         run: |
-          npm install --save-dev @semantic-release/exec @semantic-release/git
+          npm install
           
       - name: 🏷️ Semantic Release (Version Control)
         # This action automatically versions the software.
