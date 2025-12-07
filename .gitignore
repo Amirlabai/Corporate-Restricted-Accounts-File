@@ -1,0 +1,6 @@
+.vscode
+.venv
+pyrightconfig.json
+version.py
+node_modules/
+package-lock.json
