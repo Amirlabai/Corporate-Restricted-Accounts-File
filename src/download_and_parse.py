@@ -127,18 +127,18 @@ def parse_excel_file(excel_path: str) -> dict:
     """
     print(f"Parsing Excel file: {excel_path}")
     
-    try:
-        import pandas as pd
-        
+    try:     
         # Read Excel file - adjust parameters as needed for your specific file format
         # You may need to specify sheet_name, header row, etc.
-        df = pd.read_excel(excel_path, engine='openpyxl')
-        # TODO: Implement actual parsing logic here
-        # For example, you might need to:
-        # - Skip certain rows: pd.read_excel(excel_path, skiprows=2)
-        # - Specify header row: pd.read_excel(excel_path, header=3)
-        # - Read specific sheet: pd.read_excel(excel_path, sheet_name='Sheet1')
-        # - Clean/transform data
+        df = pd.read_excel(excel_path, engine='openpyxl', skiprows=4)
+        
+        df.reset_index(drop=True, inplace=True)
+        # Add source file column for tracking - extract digits from filename
+        digits = ''.join(re.findall(r'\d+', excel_path))
+        df['מספר_בנק'] = digits if digits else os.path.basename(excel_path)
+        
+        # Rename columns based on content/position
+        df = rename_columns_by_content(df)
         
         return {
             'file_path': excel_path,
@@ -167,7 +167,6 @@ def rename_columns_by_content(df):
     Returns:
         DataFrame with renamed columns
     """
-    import pandas as pd
     
     # Define the required column names in order
     required_column_names = [
@@ -222,21 +221,11 @@ def save_parsed_result(parsed_data: dict, original_filename: str, temp_dir: str)
     output_filename = f"{base_name}_parsed.csv"
     output_path = os.path.join(temp_dir, output_filename)
     
-    try:
-        import pandas as pd
-        
+    try:        
         # Save as CSV if we have parsed data
         if parsed_data.get('parsed_data') is not None:
             df = parsed_data['parsed_data']
             if isinstance(df, pd.DataFrame):
-                df = df.iloc[4:]
-                # Reset index after slicing
-                df = df.reset_index(drop=True)
-                # Rename columns based on content/position
-                df = rename_columns_by_content(df)
-                # Add source file column for tracking - extract digits from filename
-                digits = ''.join(re.findall(r'\d+', original_filename))
-                df['מספר_בנק'] = digits if digits else original_filename
                 df.to_csv(output_path, index=False, encoding='utf-8-sig')
                 print(f"Saved parsed result to: {output_path} ({len(df)} rows)")
             else:
@@ -274,9 +263,7 @@ def combine_results(parsed_files: List[str], output_path: str):
     """
     print(f"Combining {len(parsed_files)} parsed files...")
     
-    try:
-        import pandas as pd
-        
+    try:        
         dfs = []
         for file_path in parsed_files:
             try:
@@ -440,64 +427,6 @@ def get_download_url(file_code: str) -> str:
     return f"{base_url}/{file_code}"
 
 
-def process_multiple_zip_files(file_codes: List[str], output_dir: Optional[str] = None, 
-                                final_output_path: Optional[str] = None):
-    """
-    Process multiple zip files and combine all results into a single file.
-    
-    Args:
-        file_codes: List of file codes to download and process
-        output_dir: Directory to save intermediate and final files. If None, uses temp directory.
-        final_output_path: Path for the final combined result. If None, saves to output_dir.
-    """
-    if output_dir is None:
-        output_dir = tempfile.mkdtemp(prefix="restricted_accounts_")
-    
-    os.makedirs(output_dir, exist_ok=True)
-    
-    all_parsed_files = []
-    
-    for file_code in file_codes:
-        print(f"\n{'='*60}")
-        print(f"Processing file: {file_code}")
-        print(f"{'='*60}")
-        
-        try:
-            zip_url = get_download_url(file_code)
-            
-            # Process each zip file
-            file_output_dir = os.path.join(output_dir, file_code)
-            process_zip_file(
-                zip_url=zip_url,
-                output_dir=file_output_dir,
-                final_output_path=None  # We'll combine all at the end
-            )
-            
-            # Collect all parsed files from this zip
-            parsed_dir = os.path.join(file_output_dir, "parsed")
-            if os.path.exists(parsed_dir):
-                parsed_files = [os.path.join(parsed_dir, f) 
-                              for f in os.listdir(parsed_dir) 
-                              if f.endswith(('.csv', '.txt', '.json'))]
-                all_parsed_files.extend(parsed_files)
-        
-        except Exception as e:
-            print(f"Error processing {file_code}: {e}")
-            continue
-    
-    # Combine all parsed files from all zip files
-    if all_parsed_files:
-        if final_output_path is None:
-            final_output_path = os.path.join(output_dir, "final_combined_result.csv")
-        
-        combine_results(all_parsed_files, final_output_path)
-        print(f"\n{'='*60}")
-        print(f"All processing complete! Final result saved to: {final_output_path}")
-        print(f"{'='*60}")
-    else:
-        print("No files were successfully parsed!")
-
-
 if __name__ == "__main__":
     start_time = time.time()
     # Example usage
@@ -515,7 +444,7 @@ if __name__ == "__main__":
     final_output_path = process_zip_file(
         zip_url=zip_url,
         output_dir="./output",  # Save to ./output directory
-        final_output_path=f"./RestrictedAccounts_{today_date}.csv"  # Final combined result (CSV format)
+        final_output_path=f"./output/appended/RestrictedAccounts_{today_date}.csv"  # Final combined result (CSV format)
     )
     
     end_time = time.time()
@@ -523,7 +452,7 @@ if __name__ == "__main__":
     start_time = end_time
 
     if final_output_path is not None:
-        df = pd.read_csv(final_output_path)
+        df = pd.read_csv(final_output_path, encoding='utf-8-sig')
         idea.py2idea(df, f"RestrictedAccounts_{today_date}")
 
     end_time = time.time()

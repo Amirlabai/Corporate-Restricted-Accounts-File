@@ -8,7 +8,7 @@ import sys
 def write_version_file(version: str) -> None:
     """Write the current semantic-release version to version.py."""
     project_root = Path(__file__).resolve().parents[1]
-    target_path = project_root / "version.py"
+    target_path = project_root / "src/version.py"
 
     timestamp = datetime.now(tz=timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 

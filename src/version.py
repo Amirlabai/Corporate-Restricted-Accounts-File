@@ -6,4 +6,4 @@ Do not edit manually.
 __all__ = ['__version__', '__release_date__']
 
 __version__ = '1.0.0'
-__release_date__ = '2025-12-08T16:01:53Z'
+__release_date__ = '2025-12-08T17:00:13Z'

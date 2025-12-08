@@ -59,6 +59,26 @@ jobs:
           # Configuration file (.releaserc.json) disables npm plugin.
           branches: main # Must be a string, not a list
           
+      - name: 📚 Generate Documentation
+        # Generate API documentation from Python source files
+        if: steps.semantic.outputs.new_release_published == 'true'
+        run: |
+          python scripts/generate_docs.py src --output-dir docs
+          
+      - name: 📚 Commit Generated Documentation
+        # Commit generated docs if they changed
+        if: steps.semantic.outputs.new_release_published == 'true'
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add docs/
+          if ! git diff --staged --quiet; then
+            git commit -m "docs: update generated API documentation [skip ci]"
+            git push
+          else
+            echo "No documentation changes to commit"
+          fi
+          
       - name: ✅ Report Release Status
         # Logs a success message to the workflow console.
         # Only runs if a new release was published.
@@ -66,6 +86,7 @@ jobs:
         run: |
           echo "✅ Successfully released version: ${{ steps.semantic.outputs.new_release_version }}"
           echo "Release is now available on the GitHub Releases page."
+          echo "📚 Documentation has been generated in the docs/ directory."
       
       - name: 📝 Report Status (No Release)
         # Logs a message when no new release was created.
@@ -73,3 +94,4 @@ jobs:
         run: |
           echo "ℹ️  No new release was created."
           echo "This is normal if no semantic version changes were detected in commits."
+          echo "📚 Documentation has been generated in the docs/ directory."
