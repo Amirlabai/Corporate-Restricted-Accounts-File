@@ -10,8 +10,13 @@ import tempfile
 import shutil
 from pathlib import Path
 from typing import List, Optional
+from datetime import datetime
 import requests
 from urllib.parse import urlparse
+import IDEALib as idea
+import pandas as pd
+import time
+
 
 
 def download_zip(url: str, output_path: Optional[str] = None, filename: Optional[str] = None) -> str:
@@ -170,7 +175,7 @@ def rename_columns_by_content(df):
         'מספר_סניף',              # col 1 - Branch number
         'שם_סניף',                # col 2 - Branch name
         'מספר_חשבון_מוגבל',      # col 3 - Restricted account number
-        'מספר בנק'                 # col 4 - Bank number
+        'מספר_בנק'                 # col 4 - Bank number
     ]
     
     # Get current column names
@@ -231,7 +236,7 @@ def save_parsed_result(parsed_data: dict, original_filename: str, temp_dir: str)
                 df = rename_columns_by_content(df)
                 # Add source file column for tracking - extract digits from filename
                 digits = ''.join(re.findall(r'\d+', original_filename))
-                df['מספר בנק'] = digits if digits else original_filename
+                df['מספר_בנק'] = digits if digits else original_filename
                 df.to_csv(output_path, index=False, encoding='utf-8-sig')
                 print(f"Saved parsed result to: {output_path} ({len(df)} rows)")
             else:
@@ -297,7 +302,7 @@ def combine_results(parsed_files: List[str], output_path: str):
                 'מספר_סניף',              # col 1
                 'שם_סניף',                # col 2
                 'מספר_חשבון_מוגבל',      # col 3
-                'מספר בנק'                 # col 4
+                'מספר_בנק'                 # col 4
             ]
             
             # Get all existing columns
@@ -407,12 +412,14 @@ def process_zip_file(zip_url: str, output_dir: Optional[str] = None, final_outpu
             
             combine_results(parsed_file_paths, final_output_path)
             print(f"\nProcessing complete! Final result saved to: {final_output_path}")
+            return final_output_path
         else:
             print("No files were successfully parsed!")
+            return None
     
     except Exception as e:
         print(f"Error during processing: {e}")
-        raise
+        return None
     finally:
         # Optionally clean up temp files (uncomment if desired)
         # shutil.rmtree(output_dir, ignore_errors=True)
@@ -492,6 +499,7 @@ def process_multiple_zip_files(file_codes: List[str], output_dir: Optional[str] 
 
 
 if __name__ == "__main__":
+    start_time = time.time()
     # Example usage
     # Available file codes from the website:
     # - WHPRSM02 (0.13 MB) - Corporate restricted accounts
@@ -503,18 +511,22 @@ if __name__ == "__main__":
     file_code = "WXPRSM02"  # Change this to the file you want to download
     zip_url = get_download_url(file_code)
     
-    process_zip_file(
+    today_date = datetime.now().strftime("%Y_%m_%d")
+    final_output_path = process_zip_file(
         zip_url=zip_url,
         output_dir="./output",  # Save to ./output directory
-        final_output_path="./final_result.csv"  # Final combined result (CSV format)
+        final_output_path=f"./RestrictedAccounts_{today_date}.csv"  # Final combined result (CSV format)
     )
     
-    # Option 2: Process multiple zip files and combine all results
-    # Uncomment the following to process multiple files:
-    # file_codes = ["WHPRSM02", "WXPRSM02"]  # Corporate restricted accounts
-    # process_multiple_zip_files(
-    #     file_codes=file_codes,
-    #     output_dir="./output",
-    #     final_output_path="./final_combined_result.csv"
-    # )
+    end_time = time.time()
+    print(f"Time taken to process zip file: {end_time - start_time} seconds")
+    start_time = end_time
 
+    if final_output_path is not None:
+        df = pd.read_csv(final_output_path)
+        idea.py2idea(df, f"RestrictedAccounts_{today_date}")
+
+    end_time = time.time()
+    print(f"Time taken to import to IDEA: {end_time - start_time} seconds")
+
+    idea.refresh_file_explorer()

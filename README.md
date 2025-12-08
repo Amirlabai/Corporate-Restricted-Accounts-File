@@ -28,7 +28,7 @@ Run the script to download and process a single zip file:
 python download_and_parse.py
 ```
 
-By default, it processes the `WHPRSM02` file (Corporate restricted accounts).
+By default, it processes the `WXPRSM02` file (Corporate restricted accounts).
 
 ### Customize File Selection
 
