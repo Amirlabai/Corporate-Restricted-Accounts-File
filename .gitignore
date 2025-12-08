@@ -1,3 +1,7 @@
 .venv
 pyrightconfig.json
 src/__pycache__
+output/downloaded.zip
+output/extracted
+output/parsed
+IDEALib.log
