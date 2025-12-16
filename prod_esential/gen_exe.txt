@@ -1,0 +1,11 @@
+
+# Ensure you are in your project's root directory (e.g., my_project_root/)
+# Delete old build/dist folders to ensure a clean build (optional but good practice)
+
+pyinstaller --noconsole `
+    --icon="assets/icons/iacslogo.ico" `
+    --name="DMR3" `
+    --distpath="./installer_files_man/dist" `
+    --workpath="./installer_files_man/build" `
+    --add-data "assets:assets" `
+    dmr.py

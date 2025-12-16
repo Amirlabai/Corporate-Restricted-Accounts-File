@@ -20,7 +20,7 @@ import shutil
 import time
 import sys
 from pathlib import Path
-from typing import List, Optional, Dict, Any
+from typing import List, Optional, Dict, Any, Callable
 from datetime import datetime
 from urllib.parse import urlparse
 
@@ -39,7 +39,7 @@ REQUIRED_COLUMNS = [
 
 def download_zip(url: str, output_path: Optional[Path] = None) -> Path:
     """Download a zip file from a URL with a progress spinner."""
-    print(f"Downloading zip file from: {url}")
+    print(f"Downloading zip file from: {url}\n")
     
     headers = {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
@@ -60,17 +60,9 @@ def download_zip(url: str, output_path: Optional[Path] = None) -> Path:
     output_path = Path(output_path)
     output_path.parent.mkdir(parents=True, exist_ok=True)
     
-    # Progress Loader Setup
-    loader = ('\\', '|', '/', '—')
-    loader_idx = 0
-    
     with open(output_path, 'wb') as f:
         for chunk in response.iter_content(chunk_size=8192):
             f.write(chunk)
-            # Animation logic
-            sys.stdout.write(f'\rDownloading {loader[loader_idx]}')
-            sys.stdout.flush()
-            loader_idx = (loader_idx + 1) % len(loader)
             
     sys.stdout.write('\rDownload Complete!   \n')
     sys.stdout.flush()
@@ -290,8 +282,15 @@ def get_download_url(file_code: str) -> str:
     return f"{base_url}/{file_code}"
 
 
-def save_to_idea(final_output_path: Path, today_date: str):
-    """Save the final output path to IDEA."""
+def save_to_idea(final_output_path: Path, today_date: str, ask_user_callback: Optional[Callable[[str], bool]] = None):
+    """Save the final output path to IDEA.
+    
+    Args:
+        final_output_path: Path to the CSV file to import
+        today_date: Date string for naming
+        ask_user_callback: Optional callback function that returns True/False for yes/no question.
+                          If None, uses console input().
+    """
     project_name = "חשבונות_מוגבלים"
     
     try:
@@ -312,11 +311,16 @@ def save_to_idea(final_output_path: Path, today_date: str):
                 # We do not return here; we might still be able to import to current project
         
         # Ask user for preference
-        # Reversed name for RTL console support
-        print(f"Dedicated Project: {project_name[::-1]}")
-        user_input = input("Switch to this project? (y/n): ")
+        if ask_user_callback:
+            # Use callback (e.g., from GUI)
+            switch_project = ask_user_callback(project_name)
+        else:
+            # Use console input (original behavior)
+            print(f"Dedicated Project: {project_name[::-1]}")
+            user_input = input("Switch to this project? (y/n): ")
+            switch_project = user_input.lower() == "y"
         
-        if user_input.lower() == "y":
+        if switch_project:
             print(f"Switching context to {project_name[::-1]}...")
             client.ManagedProject = project_name
         else:

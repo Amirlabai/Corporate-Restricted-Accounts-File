@@ -5,3 +5,7 @@ output/downloaded.zip
 output/extracted
 output/parsed
 IDEALib.log
+gui_config.json
+/old_installer_files
+/installer_files_*
+*.spec
