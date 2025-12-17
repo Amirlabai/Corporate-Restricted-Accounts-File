@@ -2,7 +2,6 @@
 
 Script to download zip files from Bank of Israel restricted accounts page,
 extract Excel files, parse them, and combine results.
-Automatically import the combined data to IDEA with date-stamped naming.
 
 ## Functions
 
@@ -75,18 +74,3 @@ Get the download URL for a file from Bank of Israel API.
 
 **Arguments:**
 - `file_code` : `str`
-
-### `save_to_idea(final_output_path: Path, today_date: str, ask_user_callback: Optional[Callable[[str], bool]]=None)`
-
-Save the final output path to IDEA.
-
-Args:
-    final_output_path: Path to the CSV file to import
-    today_date: Date string for naming
-    ask_user_callback: Optional callback function that returns True/False for yes/no question.
-                      If None, uses console input().
-
-**Arguments:**
-- `final_output_path` : `Path`
-- `today_date` : `str`
-- `ask_user_callback` : `Optional[Callable[[str], bool]]` (default: `None`)

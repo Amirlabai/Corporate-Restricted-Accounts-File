@@ -77,17 +77,45 @@ Returns:
     - `self`
     - `project_name` : `str`
 
-- `run_process(self)`
-  - Run the download and parse process in a separate thread.
-  - Arguments:
-    - `self`
-
-- `_run_process_thread(self)`
-  - Internal method to run the process.
-  - Arguments:
-    - `self`
-
 - `open_output_folder(self)`
   - Open the output folder in file explorer.
+  - Arguments:
+    - `self`
+
+- `_move_downloaded_file(self, old_folder: Path, new_folder: Path)`
+  - Move downloaded file when folder path changes.
+  - Arguments:
+    - `self`
+    - `old_folder` : `Path`
+    - `new_folder` : `Path`
+
+- `download_from_github(self)`
+  - Download the latest CSV file from GitHub repository.
+  - Arguments:
+    - `self`
+
+- `_download_from_github_thread(self)`
+  - Internal method to download from GitHub.
+  - Arguments:
+    - `self`
+
+- `import_to_idea(self)`
+  - Import the downloaded file to IDEA.
+  - Arguments:
+    - `self`
+
+- `_import_to_idea_thread(self)`
+  - Internal method to import to IDEA.
+  - Arguments:
+    - `self`
+
+- `on_search_change(self, event=None)`
+  - Handle search input changes.
+  - Arguments:
+    - `self`
+    - `event` (default: `None`)
+
+- `perform_search(self)`
+  - Search for account number in the downloaded file.
   - Arguments:
     - `self`
