@@ -11,9 +11,15 @@ jobs:
   download-and-parse:
     runs-on: ubuntu-latest
     
+    # Grant permissions for workflow to write to repository
+    permissions:
+      contents: write   # Required to commit and push files
+    
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
+      with:
+        fetch-depth: 0  # Fetch all history for proper git operations
     
     - name: Set up Python
       uses: actions/setup-python@v5
@@ -49,13 +55,21 @@ jobs:
           output/parsed/*.csv
         retention-days: 30
     
-    - name: Commit and push output files (optional)
+    - name: Commit and push output files
       if: always()
       run: |
         git config --local user.email "action@github.com"
         git config --local user.name "GitHub Action"
-        git add output/appended/*.csv output/parsed/*.csv || true
-        git diff --staged --quiet || git commit -m "Auto-update: Daily download $(date +'%Y-%m-%d')"
-        git push || echo "No changes to commit or push failed"
-      continue-on-error: true
+        
+        # Add CSV files
+        git add output/appended/*.csv output/parsed/*.csv 2>/dev/null || true
+        
+        # Check if there are changes to commit
+        if ! git diff --staged --quiet; then
+          git commit -m "Auto-update: Daily download $(date +'%Y-%m-%d')"
+          git push origin HEAD:main || git push origin HEAD:master
+          echo "✅ Files committed and pushed successfully"
+        else
+          echo "ℹ️ No changes to commit"
+        fi
 
