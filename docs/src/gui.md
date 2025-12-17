@@ -104,11 +104,6 @@ Returns:
   - Arguments:
     - `self`
 
-- `_import_to_idea_thread(self)`
-  - Internal method to import to IDEA.
-  - Arguments:
-    - `self`
-
 - `on_search_change(self, event=None)`
   - Handle search input changes.
   - Arguments:
