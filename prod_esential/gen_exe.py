@@ -12,10 +12,10 @@ if parent_dir not in sys.path:
 import src.version as version
 
 APP_VERSION = version.__version__
-APP_NAME = "Corp restricted accounts"
+APP_NAME = f"Corp restricted accounts {APP_VERSION}"
 
 def archive_old_installers():
-    """
+    """ 
     Scans for 'installer_files_*' directories from previous versions and moves them
     into an 'old_installer_files' archive folder.
     """
@@ -86,7 +86,7 @@ def run_pyinstaller():
         'pyinstaller',
         '--noconsole',
         #'--icon=assets/icons/iacslogo.ico',
-        '--name=Corp restricted accounts',
+        F'--name={APP_NAME}',
         f'--distpath={dist_path}',
         f'--workpath={work_path}',
         #'--add-data=assets:assets',
@@ -123,8 +123,8 @@ def run_pyinstaller():
         print("--------------")
     finally:
         # After PyInstaller completes, zip the dist\Corp restricted accounts folder and save in project root
-        dist_corp_dir = os.path.join(installer_folder, "dist", "Corp restricted accounts")
-        zip_path = os.path.join(".", "Corp_restricted_accounts.zip")
+        dist_corp_dir = os.path.join(installer_folder, "dist", APP_NAME)
+        zip_path = os.path.join(".", f"corp restricted accounts.zip")
         import zipfile
 
         if os.path.exists(dist_corp_dir):
