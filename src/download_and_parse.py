@@ -1,7 +1,6 @@
 """
 Script to download zip files from Bank of Israel restricted accounts page,
 extract Excel files, parse them, and combine results.
-Automatically import the combined data to IDEA with date-stamped naming.
 """
 
 __author__ = "Amir Labai"
@@ -20,13 +19,12 @@ import shutil
 import time
 import sys
 from pathlib import Path
-from typing import List, Optional, Dict, Any, Callable
+from typing import List, Optional, Dict, Any
 from datetime import datetime
 from urllib.parse import urlparse
 
 import requests
 import pandas as pd
-import IDEALib as idea
 
 # --- Configuration ---
 REQUIRED_COLUMNS = [
@@ -282,61 +280,6 @@ def get_download_url(file_code: str) -> str:
     return f"{base_url}/{file_code}"
 
 
-def save_to_idea(final_output_path: Path, today_date: str, ask_user_callback: Optional[Callable[[str], bool]] = None):
-    """Save the final output path to IDEA.
-    
-    Args:
-        final_output_path: Path to the CSV file to import
-        today_date: Date string for naming
-        ask_user_callback: Optional callback function that returns True/False for yes/no question.
-                          If None, uses console input().
-    """
-    project_name = "חשבונות_מוגבלים"
-    
-    try:
-        # Initialize client once
-        client = idea.idea_client()
-        
-        # Robust path finding using pathlib
-        working_dir = Path(client.WorkingDirectory)
-        projects_dir = working_dir.parent 
-        project_path = projects_dir / project_name
-
-        # Create project folder if it doesn't exist
-        if not project_path.exists():
-            try:
-                project_path.mkdir(parents=True, exist_ok=True)
-            except OSError as e:
-                print(f"Error creating projects path: {e}")
-                # We do not return here; we might still be able to import to current project
-        
-        # Ask user for preference
-        if ask_user_callback:
-            # Use callback (e.g., from GUI)
-            switch_project = ask_user_callback(project_name)
-        else:
-            # Use console input (original behavior)
-            print(f"Dedicated Project: {project_name[::-1]}")
-            user_input = input("Switch to this project? (y/n): ")
-            switch_project = user_input.lower() == "y"
-        
-        if switch_project:
-            print(f"Switching context to {project_name[::-1]}...")
-            client.ManagedProject = project_name
-        else:
-            print("Importing into CURRENT active project...")
-
-        # Perform the import
-        print("Importing data...")
-        df = pd.read_csv(final_output_path, encoding='utf-8-sig')
-        idea.py2idea(df, f"חשבונות_מוגבלים_{today_date}")
-        print("Import successful.")
-    
-    except Exception as e:
-        print(f"Error saving to IDEA: {e}")
-        print("CSV file is saved to:", final_output_path)
-
-
 if __name__ == "__main__":
     start_time = time.time()
     
@@ -360,12 +303,7 @@ if __name__ == "__main__":
     print(f"Processing time: {proc_time - start_time:.2f} seconds")
 
     if result_path is not None:
-        save_to_idea(result_path, TODAY_DATE)
+        print(f"Process completed successfully. Output saved to: {result_path}")
 
     end_time = time.time()
     print(f"Total time: {end_time - start_time:.2f} seconds")
-
-    try:
-        idea.refresh_file_explorer()
-    except Exception:
-        pass

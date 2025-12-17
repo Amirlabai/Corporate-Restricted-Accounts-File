@@ -1,0 +1,61 @@
+name: Daily Download and Parse
+
+on:
+  schedule:
+    # Run every day at 8:00 AM UTC
+    # Adjust timezone as needed (e.g., for Israel time: 6:00 AM UTC = 8:00 AM IST)
+    - cron: '0 8 * * *'
+  workflow_dispatch:  # Allow manual triggering
+
+jobs:
+  download-and-parse:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+        cache: 'pip'
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        # Install dependencies, skipping Windows-specific packages
+        pip install certifi charset-normalizer et-xmlfile idna numpy openpyxl pandas python-dateutil pytz requests six tzdata urllib3
+    
+    - name: Create output directory
+      run: |
+        mkdir -p output/appended
+        mkdir -p output/parsed
+    
+    - name: Run download and parse script
+      run: |
+        python src/download_and_parse.py
+      continue-on-error: true  # Continue even if IDEA import fails (Windows-specific)
+      env:
+        PYTHONUNBUFFERED: 1
+    
+    - name: Upload output files as artifact
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: restricted-accounts-output
+        path: |
+          output/appended/*.csv
+          output/parsed/*.csv
+        retention-days: 30
+    
+    - name: Commit and push output files (optional)
+      if: always()
+      run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        git add output/appended/*.csv output/parsed/*.csv || true
+        git diff --staged --quiet || git commit -m "Auto-update: Daily download $(date +'%Y-%m-%d')"
+        git push || echo "No changes to commit or push failed"
+      continue-on-error: true
+
