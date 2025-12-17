@@ -19,7 +19,7 @@ import shutil
 import requests
 import pandas as pd
 import re
-from idea_import import save_to_idea
+from idea_import import save_to_idea, refresh_file_explorer
 
 # Import version information
 from version import __version__, __release_date__
@@ -468,13 +468,8 @@ class RestrictedAccountsGUI:
         
         self.import_idea_button.config(state='disabled')
         self.update_status("מייבא ל-IDEA...")
+        self.root.update()  # Update UI to show status change
         
-        thread = threading.Thread(target=self._import_to_idea_thread)
-        thread.daemon = True
-        thread.start()
-    
-    def _import_to_idea_thread(self):
-        """Internal method to import to IDEA."""
         try:
             # Extract date from filename (format: חשבונות_מוגבלים_YYYY_MM_DD.csv)
             filename = self.downloaded_file_path.stem
@@ -486,6 +481,7 @@ class RestrictedAccountsGUI:
                 today_date = datetime.now().strftime("%Y_%m_%d")
             
             self.log(f"מייבא ל-IDEA: {self.downloaded_file_path}")
+            self.root.update()  # Update UI to show log message
             
             save_to_idea(self.downloaded_file_path, today_date)
             
@@ -503,6 +499,7 @@ class RestrictedAccountsGUI:
             self.update_status("שגיאה")
             messagebox.showerror("שגיאה", error_msg)
         finally:
+            refresh_file_explorer()
             self.import_idea_button.config(state='normal')
     
     def on_search_change(self, event=None):
