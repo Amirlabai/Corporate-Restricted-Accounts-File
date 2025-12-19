@@ -57,7 +57,7 @@ jobs:
         path: |
           output/appended/*.csv
           output/parsed/*.csv
-        retention-days: 30
+        retention-days: 1
     
     - name: Commit and push output files
       if: always()
@@ -65,8 +65,8 @@ jobs:
         git config --local user.email "action@github.com"
         git config --local user.name "GitHub Action"
         
-        # Add all changes in output directories (additions, modifications, and deletions)
-        git add output/appended/ output/parsed/
+        # Add all changes in output/appended directory (additions, modifications, and deletions)
+        git add output/appended/
         
         # Check if there are changes to commit
         if ! git diff --staged --quiet; then
