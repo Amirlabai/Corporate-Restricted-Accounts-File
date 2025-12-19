@@ -41,7 +41,6 @@ jobs:
     - name: Delete previous output files
       run: |
         rm -f output/appended/*.csv
-        rm -f output/parsed/*.csv
     
     - name: Run download and parse script
       run: |
@@ -57,7 +56,6 @@ jobs:
         name: restricted-accounts-output
         path: |
           output/appended/*.csv
-          output/parsed/*.csv
         retention-days: 30
     
     - name: Commit and push output files
