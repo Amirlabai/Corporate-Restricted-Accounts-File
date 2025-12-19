@@ -38,6 +38,11 @@ jobs:
         mkdir -p output/appended
         mkdir -p output/parsed
     
+    - name: Delete previous output files
+      run: |
+        rm -f output/appended/*.csv
+        rm -f output/parsed/*.csv
+    
     - name: Run download and parse script
       run: |
         python src/download_and_parse.py
@@ -61,8 +66,8 @@ jobs:
         git config --local user.email "action@github.com"
         git config --local user.name "GitHub Action"
         
-        # Add CSV files
-        git add output/appended/*.csv output/parsed/*.csv 2>/dev/null || true
+        # Add all changes in output directories (additions, modifications, and deletions)
+        git add output/appended/ output/parsed/
         
         # Check if there are changes to commit
         if ! git diff --staged --quiet; then
