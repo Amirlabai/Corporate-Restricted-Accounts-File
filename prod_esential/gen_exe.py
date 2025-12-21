@@ -12,7 +12,7 @@ if parent_dir not in sys.path:
 import src.version as version
 
 APP_VERSION = version.__version__
-APP_NAME = f"Corp restricted accounts {APP_VERSION}"
+APP_NAME = f"Corp restricted accounts"
 
 def archive_old_installers():
     """ 
