@@ -89,7 +89,7 @@ def run_pyinstaller():
         F'--name={APP_NAME}',
         f'--distpath={dist_path}',
         f'--workpath={work_path}',
-        #'--add-data=assets:assets',
+        '--add-data=assets:assets',
         'src/gui.py'
     ]
 

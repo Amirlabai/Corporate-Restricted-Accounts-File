@@ -6,8 +6,9 @@ __author__ = "Amir Labai"
 __copyright__ = "Copyright 2025, Amir Labai"
 __license__ = "MIT"
 
+import customtkinter as ctk
 import tkinter as tk
-from tkinter import ttk, messagebox, scrolledtext, filedialog
+from tkinter import ttk, messagebox, filedialog
 import threading
 import subprocess
 import sys
@@ -24,23 +25,43 @@ from idea_import import save_to_idea, refresh_file_explorer
 # Import version information
 from version import __version__, __release_date__
 
+def resource_path(relative_path):
+	""" Get absolute path to resource, works for dev and for Nuitka/PyInstaller """
+	try:
+		# Nuitka/PyInstaller creates a temp folder and stores path in sys._MEIPASS
+		# However, for data files meant to be alongside the exe, we use sys.executable
+		if getattr(sys, 'frozen', False):
+			# If the application is run as a bundle/frozen executable
+			base_path = os.path.dirname(sys.executable)
+			base_path = os.path.join(base_path,'_internal')
+		else:
+			# If running as a normal script
+			base_path = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..'))
+
+		full_path = os.path.join(base_path, relative_path)
+		return full_path
+	except Exception as e:
+		# Fallback or default path if needed
+		return os.path.join(os.path.abspath("."), relative_path)
+
+
+# Set appearance mode and color theme
+ctk.set_appearance_mode("system")  # "system", "dark", or "light"
+ctk.set_default_color_theme(resource_path("assets/custom-theme.json"))  # "blue", "green", or "dark-blue"
+
 
 class RestrictedAccountsGUI:
     """Main GUI application class."""
     
-    CONFIG_FILE = Path("gui_config.json")
+    CONFIG_FILE = Path(resource_path("assets/gui_config.json"))
     
     def __init__(self, root):
         self.root = root
         self.root.title("חשבונות מוגבלים - Corporate Restricted Accounts")
-        self.root.geometry("900x950")
         self.root.resizable(True, True)
         
         # Track downloaded file
         self.downloaded_file_path = None
-        
-        # Configure RTL support
-        self.root.option_add('*Font', 'Arial 10')
         
         # Load saved configuration
         self.config = self.load_config()
@@ -67,124 +88,130 @@ class RestrictedAccountsGUI:
     def setup_ui(self):
         """Create and arrange UI components."""
         # Main frame
-        main_frame = ttk.Frame(self.root, padding="10")
-        main_frame.pack(fill=tk.BOTH, expand=True)
+        main_frame = ctk.CTkFrame(self.root)
+        main_frame.pack(fill="both", expand=True, padx=10, pady=10)
         
         # Title
-        title_label = ttk.Label(
+        title_label = ctk.CTkLabel(
             main_frame,
             text="מערכת הורדה ועיבוד חשבונות מוגבלים",
-            font=('Arial', 14, 'bold')
+            font=ctk.CTkFont(size=18, weight="bold")
         )
-        title_label.pack(pady=(0, 10))
+        title_label.pack()
         
         # Folder selection section
-        folder_frame = ttk.LabelFrame(main_frame, padding="10")
-        folder_frame.pack(fill=tk.X, pady=(0, 10))
-        
-        # Folder path entry
-        folder_label = ttk.Label(folder_frame, text=":תיקיית שמירה", font=('Arial', 10, 'bold'))
-        folder_label.pack(pady=(0, 5), anchor='e')
+        folder_frame = ctk.CTkFrame(main_frame)
+        folder_frame.pack(fill="x", pady=(0, 5), padx=10)
 
-        path_frame = ttk.Frame(folder_frame)
-        path_frame.pack(fill=tk.X, pady=5)
+        path_frame = ctk.CTkFrame(folder_frame, fg_color="transparent")
+        path_frame.pack(fill="x", pady=5, padx=10)
         
-        ttk.Label(path_frame, text=":נתיב", width=8).pack(side=tk.RIGHT, padx=5)
+        ctk.CTkLabel(path_frame, text=":תיקיית שמירה", width=80).pack(side="right", padx=5)
         
         self.folder_path_var = tk.StringVar(value=str(self.output_folder))
-        self.folder_entry = ttk.Entry(
+        self.folder_entry = ctk.CTkEntry(
             path_frame,
             textvariable=self.folder_path_var,
-            width=50
+            width=400
         )
-        self.folder_entry.pack(side=tk.RIGHT, fill=tk.X, expand=True, padx=5)
+        self.folder_entry.pack(side="right", fill="x", expand=True, padx=5)
         
         # Browse and Save buttons frame
-        buttons_frame = ttk.Frame(folder_frame)
-        buttons_frame.pack(fill=tk.X, pady=5)
+        buttons_frame = ctk.CTkFrame(folder_frame, fg_color="transparent")
+        buttons_frame.pack(fill="x", pady=5, padx=10)
         
-        self.browse_button = ttk.Button(
+        self.browse_button = ctk.CTkButton(
             buttons_frame,
             text="...עיין",
             command=self.browse_folder,
-            width=15
+            width=120
         )
-        self.browse_button.pack(side=tk.RIGHT, padx=5)
+        self.browse_button.pack(side="right", padx=5)
         
-        self.save_folder_button = ttk.Button(
+        self.save_folder_button = ctk.CTkButton(
             buttons_frame,
             text="שמור הגדרה",
             command=self.save_folder_setting,
-            width=15
+            width=120
         )
-        self.save_folder_button.pack(side=tk.RIGHT, padx=5)
+        self.save_folder_button.pack(side="right", padx=5)
         
         # Open folder button
-        self.open_folder_button = ttk.Button(
-            main_frame,
+        tools_frame = ctk.CTkFrame(main_frame)
+        tools_frame.pack(fill="x", pady=5,padx=10)
+
+        tools_frame.grid_columnconfigure(0, weight=1)
+        tools_frame.grid_columnconfigure(1, weight=1)
+
+        open_folder_frame = ctk.CTkFrame(tools_frame)
+        open_folder_frame.grid(row=0, column=1, padx=5, pady=5)
+
+        self.open_folder_button = ctk.CTkButton(
+            open_folder_frame,
             text="פתח תיקיית קבצים",
             command=self.open_output_folder,
-            width=30
+            width=200
         )
-        self.open_folder_button.pack(pady=5)
+        self.open_folder_button.pack()
         
-        # Import to IDEA section
-        import_frame = ttk.LabelFrame(main_frame, text="ייבוא ל-IDEA", padding="10")
-        import_frame.pack(fill=tk.X, pady=(10, 5))
-        
-        self.import_idea_button = ttk.Button(
-            import_frame,
-            text="ייבא ל-IDEA",
+        import_idea_frame = ctk.CTkFrame(tools_frame)
+        import_idea_frame.grid(row=0, column=0, padx=5, pady=5)
+
+        self.import_idea_button = ctk.CTkButton(
+            import_idea_frame,
+            text="IDEA - ייבא ל",
             command=self.import_to_idea,
-            width=20,
+            width=150,
             state='disabled'
         )
-        self.import_idea_button.pack(side=tk.RIGHT, padx=5)
+        self.import_idea_button.pack()
         
         # Search section
-        search_frame = ttk.LabelFrame(main_frame, text="חיפוש", padding="10")
-        search_frame.pack(fill=tk.BOTH, expand=True, pady=(5, 10))
+        search_frame = ctk.CTkFrame(main_frame)
+        search_frame.pack(fill="both", expand=True, pady=(5, 5), padx=10)
         
-        search_input_frame = ttk.Frame(search_frame)
-        search_input_frame.pack(fill=tk.X, pady=5)
+        search_input_frame = ctk.CTkFrame(search_frame, fg_color="transparent")
+        search_input_frame.pack(fill="x", pady=5, padx=10)
         
-        ttk.Label(search_input_frame, text=":מספר חשבון מוגבל", width=15).pack(side=tk.RIGHT, padx=5)
+        ctk.CTkLabel(search_input_frame, text=":מספר חשבון מוגבל", width=120).pack(side="right", padx=5)
         
         self.search_var = tk.StringVar()
-        self.search_entry = ttk.Entry(
+        self.search_entry = ctk.CTkEntry(
             search_input_frame,
             textvariable=self.search_var,
-            width=30
+            width=200
         )
-        self.search_entry.pack(side=tk.RIGHT, fill=tk.X, expand=True, padx=5)
+        self.search_entry.pack(side="right", fill="x", expand=True, padx=5)
         self.search_entry.bind('<KeyRelease>', self.on_search_change)
         
-        self.search_button = ttk.Button(
+        self.search_button = ctk.CTkButton(
             search_input_frame,
             text="חפש",
             command=self.perform_search,
-            width=10
+            width=80
         )
-        self.search_button.pack(side=tk.RIGHT, padx=5)
+        self.search_button.pack(side="right", padx=5)
         
         # Search results
-        results_label = ttk.Label(search_frame, text=":תוצאות חיפוש", font=('Arial', 10, 'bold'))
-        results_label.pack(pady=(10, 5), anchor='e')
+        results_label = ctk.CTkLabel(search_frame, text=":תוצאות חיפוש", font=ctk.CTkFont(size=11, weight="bold"))
+        results_label.pack(anchor='e', padx=10)
         
-        # Create treeview for results
-        results_frame = ttk.Frame(search_frame)
-        results_frame.pack(fill=tk.BOTH, expand=True, pady=5)
+        # Create treeview for results (using ttk.Treeview wrapped in CTkFrame)
+        results_frame = ctk.CTkFrame(search_frame)
+        results_frame.pack(fill="both", expand=True, pady=5, padx=10)
+        
+        # Inner frame for treeview (needed for proper styling)
+        tree_container = tk.Frame(results_frame)
+        tree_container.pack(fill="both", expand=True)
         
         # Scrollbars for treeview
-        scrollbar_y = ttk.Scrollbar(results_frame, orient=tk.VERTICAL)
-        scrollbar_x = ttk.Scrollbar(results_frame, orient=tk.HORIZONTAL)
+        scrollbar_y = ttk.Scrollbar(tree_container, orient=tk.VERTICAL)
         
         self.results_tree = ttk.Treeview(
-            results_frame,
+            tree_container,
             columns=('תאריך_סיום_הגבלה', 'מספר_סניף', 'שם_סניף', 'מספר_חשבון_מוגבל', 'מספר_בנק'),
             show='headings',
             yscrollcommand=scrollbar_y.set,
-            xscrollcommand=scrollbar_x.set
         )
         
         # Configure columns
@@ -200,55 +227,51 @@ class RestrictedAccountsGUI:
         self.results_tree.column('מספר_חשבון_מוגבל', width=150)
         self.results_tree.column('מספר_בנק', width=100)
         
-        scrollbar_y.config(command=self.results_tree.yview)
-        scrollbar_x.config(command=self.results_tree.xview)
+        scrollbar_y.configure(command=self.results_tree.yview)
         
         self.results_tree.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
         scrollbar_y.pack(side=tk.RIGHT, fill=tk.Y)
-        scrollbar_x.pack(side=tk.BOTTOM, fill=tk.X)
         
-        # Status/Log area (moved to bottom, smaller)
-        log_label = ttk.Label(main_frame, text=":יומן פעילות", font=('Arial', 10, 'bold'))
-        log_label.pack(pady=(10, 5), anchor='e')
+        # Status/Log area
+        log_label = ctk.CTkLabel(main_frame, text=":יומן פעילות", font=ctk.CTkFont(weight="bold"))
+        log_label.pack(anchor='e', padx=10)
         
-        self.log_text = scrolledtext.ScrolledText(
+        self.log_text = ctk.CTkTextbox(
             main_frame,
-            height=5,
-            width=70,
-            wrap=tk.WORD,
-            font=('Consolas', 9)
+            height=100,
+            wrap="word",
         )
-        self.log_text.pack(fill=tk.BOTH, expand=False, pady=5)
+        self.log_text.pack(fill="both", expand=False, padx=10)
         
+        status_frame = ctk.CTkFrame(main_frame, fg_color="transparent")
+        status_frame.pack(fill="x", pady=5, padx=10)
         # Status bar
         self.status_var = tk.StringVar(value="מוכן לפעולה")
-        status_bar = ttk.Label(
-            main_frame,
+        status_bar = ctk.CTkLabel(
+            status_frame,
             textvariable=self.status_var,
-            relief=tk.SUNKEN,
-            anchor='w'
+            anchor='w',
         )
-        status_bar.pack(fill=tk.X, pady=(10, 0))
+        status_bar.pack(side='right', padx=10)
 
-        self.exit_button = ttk.Button(
+        self.exit_button = ctk.CTkButton(
             main_frame,
             text="יציאה",
             command=self.exit_program,
-            width=15
+            width=120
         )
-        self.exit_button.pack(pady=10)
+        self.exit_button.pack()
         
         # Version banner at the bottom
-        version_frame = ttk.Frame(main_frame)
-        version_frame.pack(side=tk.BOTTOM, fill=tk.X, pady=(5, 0))
-        
-        version_label = ttk.Label(
-            version_frame,
+        version_label = ctk.CTkLabel(
+            main_frame,
             text=f"{__version__} גרסה",
-            font=('Arial', 8),
-            foreground='gray'
+            font=ctk.CTkFont(size=9),
+            text_color="gray"
         )
-        version_label.pack(anchor='center')
+        version_label.pack(side="bottom")
+
+        self.root.geometry("900x750+50+50")
         
     def exit_program(self):
         """Exit the program."""
@@ -325,8 +348,8 @@ class RestrictedAccountsGUI:
     
     def log(self, message: str):
         """Add message to log area."""
-        self.log_text.insert(tk.END, f"{message}\n")
-        self.log_text.see(tk.END)
+        self.log_text.insert("end", f"{message}\n")
+        self.log_text.see("end")
         self.root.update_idletasks()
         
     def update_status(self, status: str):
@@ -389,7 +412,7 @@ class RestrictedAccountsGUI:
     
     def download_from_github(self):
         """Download the latest CSV file from GitHub repository."""
-        self.update_status("מוריד קובץ מ-GitHub...")
+        self.update_status("...מוריד קובץ")
         
         thread = threading.Thread(target=self._download_from_github_thread)
         thread.daemon = True
@@ -401,7 +424,7 @@ class RestrictedAccountsGUI:
             # GitHub API endpoint for repository contents
             repo_url = "https://api.github.com/repos/Amirlabai/Corporate-Restricted-Accounts-File/contents/output/appended"
             
-            self.log("מתחבר ל-GitHub...")
+            self.log("...מתחבר")
             response = requests.get(repo_url)
             response.raise_for_status()
             
@@ -411,7 +434,7 @@ class RestrictedAccountsGUI:
             csv_files = [f for f in files if f['name'].endswith('.csv') and 'חשבונות_מוגבלים' in f['name']]
             
             if not csv_files:
-                messagebox.showerror("שגיאה", "לא נמצאו קבצים ב-GitHub")
+                messagebox.showerror("שגיאה", "לא נמצאו קבצים במאגר")
                 self.update_status("שגיאה")
                 return
             
@@ -422,7 +445,7 @@ class RestrictedAccountsGUI:
             
             # Download the file
             download_url = latest_file['download_url']
-            self.log(f"מוריד מ: {download_url}")
+            self.log(f"מוריד מ: {os.path.basename(download_url)}")
             
             file_response = requests.get(download_url, stream=True)
             file_response.raise_for_status()
@@ -444,7 +467,7 @@ class RestrictedAccountsGUI:
                     f.write(chunk)
             
             self.downloaded_file_path = file_path
-            self.import_idea_button.config(state='normal')
+            self.import_idea_button.configure(state='normal')
             
             self.log(f"הורדה הושלמה: {file_path}")
             self.update_status("הורדה הושלמה בהצלחה")
@@ -466,8 +489,8 @@ class RestrictedAccountsGUI:
             messagebox.showerror("שגיאה", "אין קובץ לייבוא. אנא הורד קובץ תחילה.")
             return
         
-        self.import_idea_button.config(state='disabled')
-        self.update_status("מייבא ל-IDEA...")
+        self.import_idea_button.configure(state='disabled')
+        self.update_status("...IDEA - מייבא ל")
         self.root.update()  # Update UI to show status change
         
         try:
@@ -500,7 +523,7 @@ class RestrictedAccountsGUI:
             messagebox.showerror("שגיאה", error_msg)
         finally:
             refresh_file_explorer()
-            self.import_idea_button.config(state='normal')
+            self.import_idea_button.configure(state='normal')
     
     def on_search_change(self, event=None):
         """Handle search input changes."""
@@ -524,7 +547,7 @@ class RestrictedAccountsGUI:
             return
         
         try:
-            self.update_status("מחפש...")
+            self.update_status("...מחפש")
             
             # Read CSV file
             df = pd.read_csv(self.downloaded_file_path, encoding='utf-8-sig')
@@ -565,7 +588,7 @@ class RestrictedAccountsGUI:
 
 def main():
     """Main entry point for GUI application."""
-    root = tk.Tk()
+    root = ctk.CTk()
     app = RestrictedAccountsGUI(root)
     root.mainloop()
 
