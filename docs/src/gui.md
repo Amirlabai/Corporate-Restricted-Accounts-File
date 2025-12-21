@@ -4,6 +4,13 @@ Simple GUI application for downloading and parsing Bank of Israel restricted acc
 
 ## Functions
 
+### `resource_path(relative_path)`
+
+Get absolute path to resource, works for dev and for Nuitka/PyInstaller
+
+**Arguments:**
+- `relative_path`
+
 ### `main()`
 
 Main entry point for GUI application.
