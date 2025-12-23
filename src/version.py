@@ -5,5 +5,5 @@ Do not edit manually.
 
 __all__ = ['__version__', '__release_date__']
 
-__version__ = '1.4.0'
-__release_date__ = '2025-12-21T17:18:59Z'
+__version__ = '1.5.0'
+__release_date__ = '2025-12-23T18:58:20Z'
