@@ -34,6 +34,11 @@ Main GUI application class.
   - Arguments:
     - `self`
 
+- `show_help(self)`
+  - Show help dialog.
+  - Arguments:
+    - `self`
+
 - `exit_program(self)`
   - Exit the program.
   - Arguments:
@@ -49,6 +54,11 @@ Main GUI application class.
   - Arguments:
     - `self`
     - `config` : `dict`
+
+- `_auto_save_folder(self)`
+  - Automatically save folder setting when changed.
+  - Arguments:
+    - `self`
 
 - `browse_folder(self)`
   - Open folder browser dialog.
@@ -96,6 +106,20 @@ Returns:
     - `old_folder` : `Path`
     - `new_folder` : `Path`
 
+- `_check_url_accessible(self, url: str, timeout: int=10)`
+  - Check if a URL is accessible.
+
+Args:
+    url: The URL to check
+    timeout: Request timeout in seconds (default: 10)
+    
+Returns:
+    True if URL is accessible, False otherwise
+  - Arguments:
+    - `self`
+    - `url` : `str`
+    - `timeout` : `int` (default: `10`)
+
 - `download_from_github(self)`
   - Download the latest CSV file from GitHub repository.
   - Arguments:
@@ -117,7 +141,42 @@ Returns:
     - `self`
     - `event` (default: `None`)
 
+- `_validate_digit_only(self, event)`
+  - Validate that only digits are entered in date fields.
+  - Arguments:
+    - `self`
+    - `event`
+
+- `_handle_day_input(self, event=None)`
+  - Handle day input with validation and auto-advance.
+  - Arguments:
+    - `self`
+    - `event` (default: `None`)
+
+- `_handle_month_input(self, event=None)`
+  - Handle month input with validation and auto-advance.
+  - Arguments:
+    - `self`
+    - `event` (default: `None`)
+
+- `_handle_year_input(self, event=None)`
+  - Handle year input with validation.
+  - Arguments:
+    - `self`
+    - `event` (default: `None`)
+
+- `_trigger_date_search(self)`
+  - Trigger search when date fields change.
+  - Arguments:
+    - `self`
+
+- `_update_date_range_from_file(self, df)`
+  - Update min/max year range from the loaded file.
+  - Arguments:
+    - `self`
+    - `df`
+
 - `perform_search(self)`
-  - Search for account number in the downloaded file.
+  - Search for account number and/or date in the downloaded file.
   - Arguments:
     - `self`
