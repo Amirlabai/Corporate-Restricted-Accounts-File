@@ -322,18 +322,20 @@
                 <table id="resultsTable">
                     <thead>
                         <tr>
-                            <th class="sortable" data-column="מספר_בנק" onclick="sortTable('מספר_בנק')">מספר בנק</th>
-                            <th class="sortable" data-column="מספר_סניף" onclick="sortTable('מספר_סניף')">מספר סניף</th>
-                            <th class="sortable" data-column="מספר_חשבון_מוגבל" onclick="sortTable('מספר_חשבון_מוגבל')">מספר חשבון מוגבל</th>
-                            <th class="sortable" data-column="תאריך_סיום_הגבלה" onclick="sortTable('תאריך_סיום_הגבלה')">תאריך סיום הגבלה</th>
                             <th class="sortable" data-column="שם_סניף" onclick="sortTable('שם_סניף')">שם סניף</th>
+                            <th class="sortable" data-column="תאריך_סיום_הגבלה" onclick="sortTable('תאריך_סיום_הגבלה')">תאריך סיום הגבלה</th>
+                            <th class="sortable" data-column="מספר_חשבון_מוגבל" onclick="sortTable('מספר_חשבון_מוגבל')">מספר חשבון מוגבל</th>
+                            <th class="sortable" data-column="מספר_סניף" onclick="sortTable('מספר_סניף')">מספר סניף</th>
+                            <th class="sortable" data-column="מספר_בנק" onclick="sortTable('מספר_בנק')">מספר בנק</th>
+                            <th class="sortable" data-column="שם_בנק" onclick="sortTable('שם_בנק')">שם בנק</th>
                         </tr>
                         <tr class="filter-row">
-                            <th><input type="text" id="filter_bank" placeholder="סינון..." onkeyup="applyFilters()"></th>
-                            <th><input type="text" id="filter_branch" placeholder="סינון..." onkeyup="applyFilters()"></th>
-                            <th><input type="text" id="filter_account" placeholder="סינון..." onkeyup="applyFilters()"></th>
-                            <th><input type="text" id="filter_date" placeholder="סינון..." onkeyup="applyFilters()"></th>
                             <th><input type="text" id="filter_name" placeholder="סינון..." onkeyup="applyFilters()"></th>
+                            <th><input type="text" id="filter_date" placeholder="סינון..." onkeyup="applyFilters()"></th>
+                            <th><input type="text" id="filter_account" placeholder="סינון..." onkeyup="applyFilters()"></th>
+                            <th><input type="text" id="filter_branch" placeholder="סינון..." onkeyup="applyFilters()"></th>
+                            <th><input type="text" id="filter_bank" placeholder="סינון..." onkeyup="applyFilters()"></th>
+                            <th><input type="text" id="filter_bank_name" placeholder="סינון..." onkeyup="applyFilters()"></th>
                         </tr>
                     </thead>
                     <tbody id="resultsBody">
@@ -536,30 +538,17 @@
             let results = filteredData.length > 0 ? filteredData : allData;
 
             // Apply column filters
-            const bankFilter = document.getElementById('filter_bank').value.trim().toLowerCase();
-            const branchFilter = document.getElementById('filter_branch').value.trim().toLowerCase();
-            const accountFilter = document.getElementById('filter_account').value.trim().toLowerCase();
-            const dateFilter = document.getElementById('filter_date').value.trim().toLowerCase();
             const nameFilter = document.getElementById('filter_name').value.trim().toLowerCase();
+            const dateFilter = document.getElementById('filter_date').value.trim().toLowerCase();
+            const accountFilter = document.getElementById('filter_account').value.trim().toLowerCase();
+            const branchFilter = document.getElementById('filter_branch').value.trim().toLowerCase();
+            const bankFilter = document.getElementById('filter_bank').value.trim().toLowerCase();
+            const bankNameFilter = document.getElementById('filter_bank_name').value.trim().toLowerCase();
 
-            if (bankFilter) {
+            if (nameFilter) {
                 results = results.filter(row => {
-                    const value = String(row['מספר_בנק'] || '').toLowerCase();
-                    return value.includes(bankFilter);
-                });
-            }
-
-            if (branchFilter) {
-                results = results.filter(row => {
-                    const value = String(row['מספר_סניף'] || '').toLowerCase();
-                    return value.includes(branchFilter);
-                });
-            }
-
-            if (accountFilter) {
-                results = results.filter(row => {
-                    const value = String(row['מספר_חשבון_מוגבל'] || '').toLowerCase();
-                    return value.includes(accountFilter);
+                    const value = String(row['שם_סניף'] || '').toLowerCase();
+                    return value.includes(nameFilter);
                 });
             }
 
@@ -570,10 +559,31 @@
                 });
             }
 
-            if (nameFilter) {
+            if (accountFilter) {
                 results = results.filter(row => {
-                    const value = String(row['שם_סניף'] || '').toLowerCase();
-                    return value.includes(nameFilter);
+                    const value = String(row['מספר_חשבון_מוגבל'] || '').toLowerCase();
+                    return value.includes(accountFilter);
+                });
+            }
+
+            if (branchFilter) {
+                results = results.filter(row => {
+                    const value = String(row['מספר_סניף'] || '').toLowerCase();
+                    return value.includes(branchFilter);
+                });
+            }
+
+            if (bankFilter) {
+                results = results.filter(row => {
+                    const value = String(row['מספר_בנק'] || '').toLowerCase();
+                    return value.includes(bankFilter);
+                });
+            }
+
+            if (bankNameFilter) {
+                results = results.filter(row => {
+                    const value = String(row['שם_בנק'] || '').toLowerCase();
+                    return value.includes(bankNameFilter);
                 });
             }
 
@@ -674,11 +684,12 @@
             results.forEach(row => {
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
-                    <td>${escapeHtml(row['מספר_בנק'] || '')}</td>
-                    <td>${escapeHtml(row['מספר_סניף'] || '')}</td>
-                    <td>${escapeHtml(row['מספר_חשבון_מוגבל'] || '')}</td>
-                    <td>${escapeHtml(row['תאריך_סיום_הגבלה'] || '')}</td>
                     <td>${escapeHtml(row['שם_סניף'] || '')}</td>
+                    <td>${escapeHtml(row['תאריך_סיום_הגבלה'] || '')}</td>
+                    <td>${escapeHtml(row['מספר_חשבון_מוגבל'] || '')}</td>
+                    <td>${escapeHtml(row['מספר_סניף'] || '')}</td>
+                    <td>${escapeHtml(row['מספר_בנק'] || '')}</td>
+                    <td>${escapeHtml(row['שם_בנק'] || '')}</td>
                 `;
                 resultsBody.appendChild(tr);
             });
@@ -690,7 +701,7 @@
             
             if (dataToDownload.length === 0) return;
 
-            const headers = ['מספר_בנק', 'מספר_סניף', 'מספר_חשבון_מוגבל', 'תאריך_סיום_הגבלה', 'שם_סניף'];
+            const headers = ['שם_סניף', 'תאריך_סיום_הגבלה', 'מספר_חשבון_מוגבל', 'מספר_סניף', 'מספר_בנק', 'שם_בנק'];
             const csvContent = [
                 headers.join(','),
                 ...dataToDownload.map(row => 
@@ -743,11 +754,12 @@
             document.getElementById('year').value = '';
             
             // Clear column filters
-            document.getElementById('filter_bank').value = '';
-            document.getElementById('filter_branch').value = '';
-            document.getElementById('filter_account').value = '';
-            document.getElementById('filter_date').value = '';
             document.getElementById('filter_name').value = '';
+            document.getElementById('filter_date').value = '';
+            document.getElementById('filter_account').value = '';
+            document.getElementById('filter_branch').value = '';
+            document.getElementById('filter_bank').value = '';
+            document.getElementById('filter_bank_name').value = '';
             
             // Reset filtered data to all data
             filteredData = [...allData];

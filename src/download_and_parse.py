@@ -18,6 +18,7 @@ import tempfile
 import shutil
 import time
 import sys
+import json
 from pathlib import Path
 from typing import List, Optional, Dict, Any
 from datetime import datetime
@@ -32,7 +33,8 @@ REQUIRED_COLUMNS = [
     'מספר_סניף',              # col 1
     'שם_סניף',                # col 2
     'מספר_חשבון_מוגבל',      # col 3
-    'מספר_בנק'                # col 4 - calculated
+    'מספר_בנק',               # col 4 - calculated
+    'שם_בנק'                  # col 5 - mapped from bank-number-map.json
 ]
 
 def download_zip(url: str, output_path: Optional[Path] = None) -> Path:
@@ -161,6 +163,22 @@ def save_parsed_result(parsed_data: Dict, original_filename: str, temp_dir: Path
         if parsed_data.get('parsed_data') is not None:
             df = parsed_data['parsed_data']
             if isinstance(df, pd.DataFrame):
+                # Load bank number mapping
+                bank_map_path = Path(__file__).parent.parent / "bank-number-map.json"
+                bank_map = {}
+                if bank_map_path.exists():
+                    try:
+                        with open(bank_map_path, 'r', encoding='utf-8') as f:
+                            bank_map = json.load(f)
+                    except Exception as e:
+                        print(f"Warning: Could not load bank mapping: {e}")
+                
+                # Add שם_בנק column if מספר_בנק exists
+                if 'מספר_בנק' in df.columns:
+                    # Convert bank numbers to strings for mapping
+                    df['שם_בנק'] = df['מספר_בנק'].astype(str).map(bank_map).fillna('')
+                    print(f"Added שם_בנק column using bank mapping")
+                
                 df.to_csv(output_path, index=False, encoding='utf-8-sig')
                 print(f"Saved parsed result to: {output_path} ({len(df)} rows)")
             else:
