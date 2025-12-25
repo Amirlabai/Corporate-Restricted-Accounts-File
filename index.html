@@ -139,6 +139,13 @@
             justify-content: space-between;
             align-items: center;
             margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .download-buttons {
+            display: flex;
+            gap: 10px;
         }
 
         .results-count {
@@ -169,6 +176,52 @@
             text-align: right;
             font-weight: bold;
             white-space: nowrap;
+            cursor: pointer;
+            user-select: none;
+            position: relative;
+            transition: background-color 0.2s;
+        }
+
+        th:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        th.sortable::after {
+            content: ' ↕';
+            opacity: 0.5;
+            font-size: 0.8em;
+        }
+
+        th.sort-asc::after {
+            content: ' ↑';
+            opacity: 1;
+        }
+
+        th.sort-desc::after {
+            content: ' ↓';
+            opacity: 1;
+        }
+
+        .filter-row {
+            background: #f8f9fa;
+        }
+
+        .filter-row input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .filter-row th {
+            padding: 8px;
+            background: #f8f9fa;
+            cursor: default;
+        }
+
+        .filter-row th:hover {
+            background: #f8f9fa;
         }
 
         td {
@@ -253,7 +306,10 @@
         <div class="results-section">
             <div class="results-header">
                 <div class="results-count" id="resultsCount"></div>
-                <button class="btn btn-secondary" id="downloadBtn" style="display: none;" onclick="downloadResults()">הורד תוצאות (CSV)</button>
+                <div class="download-buttons" id="downloadButtons" style="display: none;">
+                    <button class="btn btn-secondary" onclick="downloadResults(false)">הורד מסונן (CSV)</button>
+                    <button class="btn btn-secondary" onclick="downloadResults(true)">הורד הכל (CSV)</button>
+                </div>
             </div>
 
             <div id="errorMessage" style="display: none;" class="error"></div>
@@ -263,11 +319,18 @@
                 <table id="resultsTable">
                     <thead>
                         <tr>
-                            <th>מספר בנק</th>
-                            <th>מספר סניף</th>
-                            <th>מספר חשבון מוגבל</th>
-                            <th>תאריך סיום הגבלה</th>
-                            <th>שם סניף</th>
+                            <th class="sortable" data-column="מספר_בנק" onclick="sortTable('מספר_בנק')">מספר בנק</th>
+                            <th class="sortable" data-column="מספר_סניף" onclick="sortTable('מספר_סניף')">מספר סניף</th>
+                            <th class="sortable" data-column="מספר_חשבון_מוגבל" onclick="sortTable('מספר_חשבון_מוגבל')">מספר חשבון מוגבל</th>
+                            <th class="sortable" data-column="תאריך_סיום_הגבלה" onclick="sortTable('תאריך_סיום_הגבלה')">תאריך סיום הגבלה</th>
+                            <th class="sortable" data-column="שם_סניף" onclick="sortTable('שם_סניף')">שם סניף</th>
+                        </tr>
+                        <tr class="filter-row">
+                            <th><input type="text" id="filter_bank" placeholder="סינון..." onkeyup="applyFilters()"></th>
+                            <th><input type="text" id="filter_branch" placeholder="סינון..." onkeyup="applyFilters()"></th>
+                            <th><input type="text" id="filter_account" placeholder="סינון..." onkeyup="applyFilters()"></th>
+                            <th><input type="text" id="filter_date" placeholder="סינון..." onkeyup="applyFilters()"></th>
+                            <th><input type="text" id="filter_name" placeholder="סינון..." onkeyup="applyFilters()"></th>
                         </tr>
                     </thead>
                     <tbody id="resultsBody">
@@ -284,6 +347,9 @@
     <script>
         let allData = [];
         let currentResults = [];
+        let filteredData = [];
+        let sortColumn = null;
+        let sortDirection = 'asc';
 
         // Load CSV data
         async function loadData() {
@@ -313,7 +379,12 @@
                     csvText = csvText.slice(1);
                 }
                 allData = parseCSV(csvText);
+                filteredData = [...allData];
+                currentResults = [...allData];
                 loadingMsg.style.display = 'none';
+                
+                // Display all data initially
+                displayResults(allData);
                 
                 console.log(`נטענו ${allData.length} רשומות`);
             } catch (error) {
@@ -445,8 +516,116 @@
                 }
             }
 
+            filteredData = results;
+            applyFilters();
+        }
+
+        // Apply column filters
+        function applyFilters() {
+            let results = filteredData.length > 0 ? filteredData : allData;
+
+            // Apply column filters
+            const bankFilter = document.getElementById('filter_bank').value.trim().toLowerCase();
+            const branchFilter = document.getElementById('filter_branch').value.trim().toLowerCase();
+            const accountFilter = document.getElementById('filter_account').value.trim().toLowerCase();
+            const dateFilter = document.getElementById('filter_date').value.trim().toLowerCase();
+            const nameFilter = document.getElementById('filter_name').value.trim().toLowerCase();
+
+            if (bankFilter) {
+                results = results.filter(row => {
+                    const value = String(row['מספר_בנק'] || '').toLowerCase();
+                    return value.includes(bankFilter);
+                });
+            }
+
+            if (branchFilter) {
+                results = results.filter(row => {
+                    const value = String(row['מספר_סניף'] || '').toLowerCase();
+                    return value.includes(branchFilter);
+                });
+            }
+
+            if (accountFilter) {
+                results = results.filter(row => {
+                    const value = String(row['מספר_חשבון_מוגבל'] || '').toLowerCase();
+                    return value.includes(accountFilter);
+                });
+            }
+
+            if (dateFilter) {
+                results = results.filter(row => {
+                    const value = String(row['תאריך_סיום_הגבלה'] || '').toLowerCase();
+                    return value.includes(dateFilter);
+                });
+            }
+
+            if (nameFilter) {
+                results = results.filter(row => {
+                    const value = String(row['שם_סניף'] || '').toLowerCase();
+                    return value.includes(nameFilter);
+                });
+            }
+
+            // Apply sorting if active
+            if (sortColumn) {
+                results = sortData(results, sortColumn, sortDirection);
+            }
+
             currentResults = results;
             displayResults(results);
+        }
+
+        // Sort table
+        function sortTable(column) {
+            // Update sort direction
+            if (sortColumn === column) {
+                sortDirection = sortDirection === 'asc' ? 'desc' : 'asc';
+            } else {
+                sortColumn = column;
+                sortDirection = 'asc';
+            }
+
+            // Update header classes
+            document.querySelectorAll('th.sortable').forEach(th => {
+                th.classList.remove('sort-asc', 'sort-desc');
+                if (th.dataset.column === column) {
+                    th.classList.add(sortDirection === 'asc' ? 'sort-asc' : 'sort-desc');
+                }
+            });
+
+            // Apply sorting to current results
+            applyFilters();
+        }
+
+        // Sort data array
+        function sortData(data, column, direction) {
+            return [...data].sort((a, b) => {
+                let aVal = String(a[column] || '').trim();
+                let bVal = String(b[column] || '').trim();
+
+                // Try to parse as numbers
+                const aNum = parseFloat(aVal);
+                const bNum = parseFloat(bVal);
+                
+                if (!isNaN(aNum) && !isNaN(bNum)) {
+                    return direction === 'asc' ? aNum - bNum : bNum - aNum;
+                }
+
+                // Try to parse as dates
+                const aDate = new Date(aVal);
+                const bDate = new Date(bVal);
+                
+                if (!isNaN(aDate.getTime()) && !isNaN(bDate.getTime())) {
+                    return direction === 'asc' ? aDate - bDate : bDate - aDate;
+                }
+
+                // String comparison
+                if (direction === 'asc') {
+                    return aVal.localeCompare(bVal, 'he');
+                } else {
+                    return bVal.localeCompare(aVal, 'he');
+                }
+            });
         }
 
         // Display results in table
@@ -455,22 +634,31 @@
             const noResults = document.getElementById('noResults');
             const resultsBody = document.getElementById('resultsBody');
             const resultsCount = document.getElementById('resultsCount');
-            const downloadBtn = document.getElementById('downloadBtn');
+            const downloadButtons = document.getElementById('downloadButtons');
 
             resultsBody.innerHTML = '';
 
-            if (results.length === 0) {
+            if (results.length === 0 && allData.length === 0) {
                 container.style.display = 'none';
                 noResults.style.display = 'block';
                 resultsCount.textContent = 'לא נמצאו תוצאות';
-                downloadBtn.style.display = 'none';
+                downloadButtons.style.display = 'none';
                 return;
             }
 
             container.style.display = 'block';
             noResults.style.display = 'none';
-            resultsCount.textContent = `נמצאו ${results.length} תוצאות`;
-            downloadBtn.style.display = 'inline-block';
+            
+            // Show total and filtered count
+            const totalCount = allData.length;
+            const filteredCount = results.length;
+            if (filteredCount < totalCount) {
+                resultsCount.textContent = `מציג ${filteredCount} מתוך ${totalCount} רשומות`;
+            } else {
+                resultsCount.textContent = `סה"כ ${totalCount} רשומות`;
+            }
+            
+            downloadButtons.style.display = 'flex';
 
             results.forEach(row => {
                 const tr = document.createElement('tr');
@@ -486,13 +674,15 @@
         }
 
         // Download results as CSV
-        function downloadResults() {
-            if (currentResults.length === 0) return;
+        function downloadResults(downloadAll = false) {
+            const dataToDownload = downloadAll ? allData : currentResults;
+            
+            if (dataToDownload.length === 0) return;
 
             const headers = ['מספר_בנק', 'מספר_סניף', 'מספר_חשבון_מוגבל', 'תאריך_סיום_הגבלה', 'שם_סניף'];
             const csvContent = [
                 headers.join(','),
-                ...currentResults.map(row => 
+                ...dataToDownload.map(row => 
                     headers.map(header => `"${String(row[header] || '').replace(/"/g, '""')}"`).join(',')
                 )
             ].join('\n');
@@ -501,8 +691,12 @@
             const link = document.createElement('a');
             const url = URL.createObjectURL(blob);
             
+            const fileName = downloadAll 
+                ? `כל_הנתונים_${new Date().toISOString().split('T')[0]}.csv`
+                : `תוצאות_מסוננות_${new Date().toISOString().split('T')[0]}.csv`;
+            
             link.setAttribute('href', url);
-            link.setAttribute('download', `תוצאות_חיפוש_${new Date().toISOString().split('T')[0]}.csv`);
+            link.setAttribute('download', fileName);
             link.style.visibility = 'hidden';
             document.body.appendChild(link);
             link.click();
@@ -544,6 +738,19 @@
             document.getElementById(id).addEventListener('input', function(e) {
                 this.value = this.value.replace(/[^0-9]/g, '');
             });
+        });
+
+        // Allow only digits in numeric filter fields
+        document.getElementById('filter_bank').addEventListener('input', function(e) {
+            this.value = this.value.replace(/[^0-9]/g, '');
+        });
+
+        document.getElementById('filter_branch').addEventListener('input', function(e) {
+            this.value = this.value.replace(/[^0-9]/g, '');
+        });
+
+        document.getElementById('filter_account').addEventListener('input', function(e) {
+            this.value = this.value.replace(/[^0-9]/g, '');
         });
 
         // Load data on page load
