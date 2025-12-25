@@ -350,6 +350,7 @@
         let filteredData = [];
         let sortColumn = null;
         let sortDirection = 'asc';
+        let originalFileName = '';
 
         // Load CSV data
         async function loadData() {
@@ -367,6 +368,13 @@
                 }
 
                 const latestFile = csvFiles[0];
+                
+                // Extract original filename from URL
+                const urlParts = latestFile.split('/');
+                originalFileName = urlParts[urlParts.length - 1];
+                // Remove query parameters if any
+                originalFileName = originalFileName.split('?')[0];
+                
                 const response = await fetch(latestFile);
                 
                 if (!response.ok) {
@@ -692,7 +700,7 @@
             const url = URL.createObjectURL(blob);
             
             const fileName = downloadAll 
-                ? `כל_הנתונים_${new Date().toISOString().split('T')[0]}.csv`
+                ? (originalFileName || `כל_הנתונים_${new Date().toISOString().split('T')[0]}.csv`)
                 : `תוצאות_מסוננות_${new Date().toISOString().split('T')[0]}.csv`;
             
             link.setAttribute('href', url);
