@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>חיפוש חשבונות מוגבלים - Restricted Accounts Search</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            direction: rtl;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .search-section {
+            padding: 30px;
+            background: #f8f9fa;
+            border-bottom: 2px solid #e9ecef;
+        }
+
+        .search-form {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            align-items: flex-end;
+        }
+
+        .form-group {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #495057;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .date-inputs {
+            display: flex;
+            gap: 5px;
+            align-items: center;
+        }
+
+        .date-inputs input {
+            flex: 1;
+            text-align: center;
+        }
+
+        .date-separator {
+            font-size: 18px;
+            font-weight: bold;
+            color: #6c757d;
+        }
+
+        .btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+
+        .results-section {
+            padding: 30px;
+        }
+
+        .results-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .results-count {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #495057;
+        }
+
+        .table-container {
+            overflow-x: auto;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+        }
+
+        thead {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        th {
+            padding: 15px;
+            text-align: right;
+            font-weight: bold;
+            white-space: nowrap;
+        }
+
+        td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #dee2e6;
+            text-align: right;
+        }
+
+        tbody tr:hover {
+            background: #f8f9fa;
+        }
+
+        .no-results {
+            text-align: center;
+            padding: 50px;
+            color: #6c757d;
+            font-size: 1.2em;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 50px;
+            font-size: 1.2em;
+            color: #667eea;
+        }
+
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+
+        @media (max-width: 768px) {
+            .search-form {
+                flex-direction: column;
+            }
+
+            .form-group {
+                width: 100%;
+            }
+
+            .date-inputs {
+                flex-direction: row;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>חיפוש חשבונות מוגבלים</h1>
+            <p>Restricted Accounts Database Search</p>
+        </div>
+
+        <div class="search-section">
+            <form class="search-form" id="searchForm">
+                <div class="form-group">
+                    <label for="accountNumber">מספר חשבון מוגבל:</label>
+                    <input type="text" id="accountNumber" placeholder="הזן מספר חשבון" pattern="[0-9]*" inputmode="numeric">
+                </div>
+
+                <div class="form-group">
+                    <label>תאריך סיום הגבלה (מ-):</label>
+                    <div class="date-inputs">
+                        <input type="text" id="year" placeholder="שנה" maxlength="4" pattern="[0-9]*" inputmode="numeric">
+                        <span class="date-separator">/</span>
+                        <input type="text" id="month" placeholder="חודש" maxlength="2" pattern="[0-9]*" inputmode="numeric">
+                        <span class="date-separator">/</span>
+                        <input type="text" id="day" placeholder="יום" maxlength="2" pattern="[0-9]*" inputmode="numeric">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>&nbsp;</label>
+                    <button type="submit" class="btn btn-primary">חפש</button>
+                </div>
+            </form>
+        </div>
+
+        <div class="results-section">
+            <div class="results-header">
+                <div class="results-count" id="resultsCount"></div>
+                <button class="btn btn-secondary" id="downloadBtn" style="display: none;" onclick="downloadResults()">הורד תוצאות (CSV)</button>
+            </div>
+
+            <div id="errorMessage" style="display: none;" class="error"></div>
+            <div id="loadingMessage" class="loading" style="display: none;">טוען נתונים...</div>
+
+            <div class="table-container" id="resultsContainer" style="display: none;">
+                <table id="resultsTable">
+                    <thead>
+                        <tr>
+                            <th>מספר בנק</th>
+                            <th>מספר סניף</th>
+                            <th>מספר חשבון מוגבל</th>
+                            <th>תאריך סיום הגבלה</th>
+                            <th>שם סניף</th>
+                        </tr>
+                    </thead>
+                    <tbody id="resultsBody">
+                    </tbody>
+                </table>
+            </div>
+
+            <div id="noResults" class="no-results" style="display: none;">
+                לא נמצאו תוצאות
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let allData = [];
+        let currentResults = [];
+
+        // Load CSV data
+        async function loadData() {
+            const loadingMsg = document.getElementById('loadingMessage');
+            const errorMsg = document.getElementById('errorMessage');
+            
+            loadingMsg.style.display = 'block';
+            errorMsg.style.display = 'none';
+
+            try {
+                // Try to find the latest CSV file
+                const csvFiles = await findLatestCSV();
+                if (!csvFiles || csvFiles.length === 0) {
+                    throw new Error('לא נמצאו קבצי CSV');
+                }
+
+                const latestFile = csvFiles[0];
+                const response = await fetch(latestFile);
+                
+                if (!response.ok) {
+                    throw new Error('שגיאה בטעינת הקובץ');
+                }
+
+                let csvText = await response.text();
+                // Remove BOM if present (UTF-8 BOM: \ufeff)
+                if (csvText.charCodeAt(0) === 0xFEFF) {
+                    csvText = csvText.slice(1);
+                }
+                allData = parseCSV(csvText);
+                loadingMsg.style.display = 'none';
+                
+                console.log(`נטענו ${allData.length} רשומות`);
+            } catch (error) {
+                loadingMsg.style.display = 'none';
+                errorMsg.textContent = `שגיאה: ${error.message}`;
+                errorMsg.style.display = 'block';
+                console.error('Error loading data:', error);
+            }
+        }
+
+        // Find latest CSV file in output/appended directory
+        async function findLatestCSV() {
+            // For GitHub Pages, we need to list files from the repository
+            // This is a simplified version - in production, you might want to use GitHub API
+            const basePath = 'output/appended/';
+            const possibleFiles = [
+                'חשבונות_מוגבלים_2025_12_24.csv',
+                // Add more file names or use GitHub API to list files
+            ];
+
+            // Try to find existing file
+            for (const file of possibleFiles) {
+                try {
+                    const response = await fetch(basePath + file, { method: 'HEAD' });
+                    if (response.ok) {
+                        return [basePath + file];
+                    }
+                } catch (e) {
+                    continue;
+                }
+            }
+
+            // Fallback: try to get from GitHub API
+            try {
+                const apiUrl = 'https://api.github.com/repos/Amirlabai/Corporate-Restricted-Accounts-File/contents/output/appended';
+                const response = await fetch(apiUrl);
+                if (response.ok) {
+                    const files = await response.json();
+                    const csvFiles = files
+                        .filter(f => f.name.endsWith('.csv') && f.name.includes('חשבונות_מוגבלים'))
+                        .sort((a, b) => b.name.localeCompare(a.name))
+                        .map(f => f.download_url);
+                    return csvFiles;
+                }
+            } catch (e) {
+                console.error('GitHub API error:', e);
+            }
+
+            return [];
+        }
+
+        // Parse CSV text to array of objects
+        function parseCSV(csvText) {
+            const lines = csvText.split('\n').filter(line => line.trim());
+            if (lines.length < 2) return [];
+
+            const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
+            const data = [];
+
+            for (let i = 1; i < lines.length; i++) {
+                const values = parseCSVLine(lines[i]);
+                if (values.length === headers.length) {
+                    const row = {};
+                    headers.forEach((header, index) => {
+                        row[header] = values[index] || '';
+                    });
+                    data.push(row);
+                }
+            }
+
+            return data;
+        }
+
+        // Parse CSV line handling quoted values
+        function parseCSVLine(line) {
+            const values = [];
+            let current = '';
+            let inQuotes = false;
+
+            for (let i = 0; i < line.length; i++) {
+                const char = line[i];
+                if (char === '"') {
+                    inQuotes = !inQuotes;
+                } else if (char === ',' && !inQuotes) {
+                    values.push(current.trim());
+                    current = '';
+                } else {
+                    current += char;
+                }
+            }
+            values.push(current.trim());
+            return values;
+        }
+
+        // Search function
+        function performSearch() {
+            const accountNumber = document.getElementById('accountNumber').value.trim();
+            const day = document.getElementById('day').value.trim();
+            const month = document.getElementById('month').value.trim();
+            const year = document.getElementById('year').value.trim();
+
+            let results = allData;
+
+            // Filter by account number
+            if (accountNumber) {
+                results = results.filter(row => {
+                    const account = String(row['מספר_חשבון_מוגבל'] || '').trim();
+                    return account.includes(accountNumber);
+                });
+            }
+
+            // Filter by date
+            if (day && month && year) {
+                try {
+                    const searchDate = new Date(`${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`);
+                    if (!isNaN(searchDate.getTime())) {
+                        results = results.filter(row => {
+                            const dateStr = String(row['תאריך_סיום_הגבלה'] || '').trim();
+                            if (!dateStr) return false;
+                            
+                            const rowDate = new Date(dateStr);
+                            if (isNaN(rowDate.getTime())) return false;
+                            
+                            return rowDate >= searchDate;
+                        });
+                    }
+                } catch (e) {
+                    console.error('Date parsing error:', e);
+                }
+            }
+
+            currentResults = results;
+            displayResults(results);
+        }
+
+        // Display results in table
+        function displayResults(results) {
+            const container = document.getElementById('resultsContainer');
+            const noResults = document.getElementById('noResults');
+            const resultsBody = document.getElementById('resultsBody');
+            const resultsCount = document.getElementById('resultsCount');
+            const downloadBtn = document.getElementById('downloadBtn');
+
+            resultsBody.innerHTML = '';
+
+            if (results.length === 0) {
+                container.style.display = 'none';
+                noResults.style.display = 'block';
+                resultsCount.textContent = 'לא נמצאו תוצאות';
+                downloadBtn.style.display = 'none';
+                return;
+            }
+
+            container.style.display = 'block';
+            noResults.style.display = 'none';
+            resultsCount.textContent = `נמצאו ${results.length} תוצאות`;
+            downloadBtn.style.display = 'inline-block';
+
+            results.forEach(row => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${escapeHtml(row['מספר_בנק'] || '')}</td>
+                    <td>${escapeHtml(row['מספר_סניף'] || '')}</td>
+                    <td>${escapeHtml(row['מספר_חשבון_מוגבל'] || '')}</td>
+                    <td>${escapeHtml(row['תאריך_סיום_הגבלה'] || '')}</td>
+                    <td>${escapeHtml(row['שם_סניף'] || '')}</td>
+                `;
+                resultsBody.appendChild(tr);
+            });
+        }
+
+        // Download results as CSV
+        function downloadResults() {
+            if (currentResults.length === 0) return;
+
+            const headers = ['מספר_בנק', 'מספר_סניף', 'מספר_חשבון_מוגבל', 'תאריך_סיום_הגבלה', 'שם_סניף'];
+            const csvContent = [
+                headers.join(','),
+                ...currentResults.map(row => 
+                    headers.map(header => `"${String(row[header] || '').replace(/"/g, '""')}"`).join(',')
+                )
+            ].join('\n');
+
+            const blob = new Blob(['\ufeff' + csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            
+            link.setAttribute('href', url);
+            link.setAttribute('download', `תוצאות_חיפוש_${new Date().toISOString().split('T')[0]}.csv`);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        // Escape HTML to prevent XSS
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Auto-advance date inputs
+        document.getElementById('day').addEventListener('input', function(e) {
+            if (this.value.length === 2 && parseInt(this.value) <= 31) {
+                document.getElementById('month').focus();
+            }
+        });
+
+        document.getElementById('month').addEventListener('input', function(e) {
+            if (this.value.length === 2 && parseInt(this.value) <= 12) {
+                document.getElementById('year').focus();
+            }
+        });
+
+        // Form submission
+        document.getElementById('searchForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            performSearch();
+        });
+
+        // Only allow digits in inputs
+        document.getElementById('accountNumber').addEventListener('input', function(e) {
+            this.value = this.value.replace(/[^0-9]/g, '');
+        });
+
+        ['day', 'month', 'year'].forEach(id => {
+            document.getElementById(id).addEventListener('input', function(e) {
+                this.value = this.value.replace(/[^0-9]/g, '');
+            });
+        });
+
+        // Load data on page load
+        window.addEventListener('DOMContentLoaded', loadData);
+    </script>
+</body>
+</html>
+
