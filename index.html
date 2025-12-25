@@ -298,7 +298,10 @@
 
                 <div class="form-group">
                     <label>&nbsp;</label>
-                    <button type="submit" class="btn btn-primary">חפש</button>
+                    <div style="display: flex; gap: 10px;">
+                        <button type="submit" class="btn btn-primary">חפש</button>
+                        <button type="button" class="btn btn-secondary" onclick="clearFilters()">נקה</button>
+                    </div>
                 </div>
             </form>
         </div>
@@ -730,6 +733,38 @@
                 document.getElementById('year').focus();
             }
         });
+
+        // Clear all filters
+        function clearFilters() {
+            // Clear search inputs
+            document.getElementById('accountNumber').value = '';
+            document.getElementById('day').value = '';
+            document.getElementById('month').value = '';
+            document.getElementById('year').value = '';
+            
+            // Clear column filters
+            document.getElementById('filter_bank').value = '';
+            document.getElementById('filter_branch').value = '';
+            document.getElementById('filter_account').value = '';
+            document.getElementById('filter_date').value = '';
+            document.getElementById('filter_name').value = '';
+            
+            // Reset filtered data to all data
+            filteredData = [...allData];
+            
+            // Reset sorting
+            sortColumn = null;
+            sortDirection = 'asc';
+            
+            // Remove sort indicators from headers
+            document.querySelectorAll('th.sortable').forEach(th => {
+                th.classList.remove('sort-asc', 'sort-desc');
+            });
+            
+            // Display all data
+            currentResults = [...allData];
+            displayResults(allData);
+        }
 
         // Form submission
         document.getElementById('searchForm').addEventListener('submit', function(e) {
