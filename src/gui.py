@@ -21,7 +21,7 @@ import requests
 import pandas as pd
 import re
 from idea_import import save_to_idea, refresh_file_explorer
-
+import idea_controller as idea_controller
 # Import version information
 from version import __version__, __release_date__
 
@@ -95,9 +95,12 @@ class RestrictedAccountsGUI:
             text="עזרה",
             command=self.show_help,
             corner_radius=0,
-            fg_color="transparent"
+            fg_color="transparent",
+            text_color="gray"
         )
         help_button.pack(side="right")
+
+        self.root.bind("<F1>", lambda event: self.show_help())
 
         # Main frame
         main_frame = ctk.CTkFrame(self.root)
@@ -319,6 +322,8 @@ class RestrictedAccountsGUI:
             width=120
         )
         self.exit_button.pack()
+
+        self.root.bind("<Alt-F4>", lambda event: self.exit_program())
         
         # Version banner at the bottom
         version_label = ctk.CTkLabel(
@@ -341,6 +346,8 @@ class RestrictedAccountsGUI:
 
     def exit_program(self):
         """Exit the program."""
+        if messagebox.askyesno("יציאה", "?IDEA - האם ברצונך לצאת גם מ") == True:
+            idea_controller.stop_idea()
         self.root.quit()
         
     def load_config(self) -> dict:
@@ -925,6 +932,13 @@ class RestrictedAccountsGUI:
 
 def main():
     """Main entry point for GUI application."""
+
+    idea_executable_path = idea_controller.search_disk_for_idea()
+    if not idea_executable_path == "Executable not found on disk.":
+        if not idea_controller.is_idea_running():
+            # Start IDEA
+            idea_controller.start_idea(idea_executable_path)
+
     root = ctk.CTk()
     app = RestrictedAccountsGUI(root)
     root.mainloop()

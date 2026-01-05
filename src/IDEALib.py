@@ -22,11 +22,11 @@ PREFIXFILTER = ["~"]
 PATHSEPERATOR = os.path.sep
 
 # region Setup
-logging.basicConfig(
+'''logging.basicConfig(
     filename="IDEALib.log",
     level=logging.INFO,
     format="%(asctime)s - %(levelname)s - %(message)s"
-)
+)'''
 
 # Use appropriate delimiter and decimal separator values based on set locale
 DELIMITER = ','
@@ -57,7 +57,7 @@ class _SingletonIdeaClient:
     def __init__(self):
         if _SingletonIdeaClient.__instance is not None:
             msg = "This class is a singleton and already has an instance"
-            logging.warning(msg)
+            #logging.warning(msg)
             raise Exception(msg)
         else:
             _SingletonIdeaClient.__instance = self
@@ -73,7 +73,7 @@ def _connect_to_COM(comObjName):
         comObj = win32com.Dispatch(dispatch=comObjName)
     except Exception as e:
         msg = f"Unable to connect to {comObjName}: {e}"
-        logging.error(msg)
+        #logging.error(msg)
         raise Exception(msg)
     return comObj
 
@@ -97,87 +97,87 @@ def _connect_to_ideaRDF():
 # region IDEA Properties
 
 def idea_marketing_version():
-    logging.info("IDEAMarketingVersion: Function Called")
+    #logging.info("IDEAMarketingVersion: Function Called")
     try:
         installInfo = _connect_to_InstallInfo()
         value = installInfo.MarketingVersion
     except Exception as e:
-        logging.error(f"IDEAMarketingVersion: Error - {e}")
+        #logging.error(f"IDEAMarketingVersion: Error - {e}")
         raise
     finally:
         del installInfo
 
-    logging.info("IDEAMarketingVersion: Successful")
+    #logging.info("IDEAMarketingVersion: Successful")
     return value
 
 def idea_version():
-    logging.info("IDEAVersion: Function Called")
+    #logging.info("IDEAVersion: Function Called")
     try:
         installInfo = _connect_to_InstallInfo()
         value = installInfo.Version
     except Exception as e:
-        logging.error(f"IDEAVersion: Error - {e}")
+        #logging.error(f"IDEAVersion: Error - {e}")
         raise
     finally:
         del installInfo
 
-    logging.info("IDEAVersion: Successful")
+    #logging.info("IDEAVersion: Successful")
     return value
 
 def idea_language():
-    logging.info("IDEALanguage: Function Called")
+    #logging.info("IDEALanguage: Function Called")
     try:
         installInfo = _connect_to_InstallInfo()
         value = installInfo.AppLanguage
     except Exception as e:
-        logging.error(f"IDEALanguage: Error - {e}")
+        #logging.error(f"IDEALanguage: Error - {e}")
         raise
     finally:
         del installInfo
 
-    logging.info("IDEALanguage: Successful")
+    #logging.info("IDEALanguage: Successful")
     return value
 
 def idea_encoding():
-    logging.info("IDEAEncoding: Function Called")
+    #logging.info("IDEAEncoding: Function Called")
     try:
         installInfo = _connect_to_InstallInfo()
         value = installInfo.AppStandard
     except Exception as e:
-        logging.error(f"IDEAEncoding: Error - {e}")
+        #logging.error(f"IDEAEncoding: Error - {e}")
         raise
     finally:
         del installInfo
 
-    logging.info("IDEAEncoding: Successful")
+    #logging.info("IDEAEncoding: Successful")
     return value
 
 def list_separator():
-    logging.info("ListSeparator: Function Called")
+    #logging.info("ListSeparator: Function Called")
     try:
         configureIdea = _connect_to_ConfigureIdea()
         value = configureIdea.ListSeparator
     except Exception as e:
-        logging.error(f"ListSeparator: Error - {e}")
+        #logging.error(f"ListSeparator: Error - {e}")
         raise
     finally:
         del configureIdea
 
-    logging.info("ListSeparator: Successful")
+    #logging.info("ListSeparator: Successful")
     return value
 
 def decimal_separator():
-    logging.info("DecimalSeparator: Function Called")
+    #logging.info("DecimalSeparator: Function Called")
     try:
         configureIdea = _connect_to_ConfigureIdea()
         value = configureIdea.DecimalSeparator
     except Exception as e:
-        logging.error(f"DecimalSeparator: Error - {e}")
+        #logging.error(f"DecimalSeparator: Error - {e}")
         raise
     finally:
         del configureIdea
 
-    logging.info("DecimalSeparator: Successful")
+    #logging.info("DecimalSeparator: Successful")
     return value
 
 '''
@@ -189,7 +189,7 @@ def _get_db_extension():
         configureIdea = _connect_to_ConfigureIdea()
         value = configureIdea.IDEADBExt
     except Exception as e:
-        logging.error(f"_get_db_extension: Error - {e}")
+        #logging.error(f"_get_db_extension: Error - {e}")
         raise
     finally:
         del configureIdea
@@ -201,7 +201,7 @@ def _get_working_directory():
         configureIdea = _connect_to_ConfigureIdea()
         value = configureIdea.WorkingDirectory
     except Exception as e:
-        logging.error(f"_get_working_directory: Error - {e}")
+        #logging.error(f"_get_working_directory: Error - {e}")
         raise
     finally:
         del configureIdea
@@ -218,7 +218,7 @@ def _read_registry(key,subkey,keyValue):
         winreg.CloseKey(registry_key)
     except:
         msg = "_read_registry: Error Reading the registry key '" + subkey + "\\" + keyValue + "'"
-        logging.error(msg)
+        #logging.error(msg)
         value = None
     return value
 
@@ -229,21 +229,21 @@ def _get_date_format(keyValue):
     return _read_registry(key, subkey, keyValue)
 
 def short_date_format():
-    logging.info("short_date_format: Function Called")
+    #logging.info("short_date_format: Function Called")
 
     keyValue = "sShortDate"
     value = _get_date_format(keyValue)
 
-    logging.info("short_date_format: Successful")    
+    #logging.info("short_date_format: Successful")    
     return value
 
 def long_date_format():
-    logging.info("long_date_format: Function Called")
+    #logging.info("long_date_format: Function Called")
 
     keyValue = "sLongDate"
     value = _get_date_format(keyValue)
 
-    logging.info("long_date_format: Successful")
+    #logging.info("long_date_format: Successful")
     return value
 
 # endregion
@@ -295,7 +295,7 @@ def _get_date_time_masks():
 # region IDEA Client functions
 
 def idea_client():
-    logging.info("idea_client: Function Called")
+    #logging.info("idea_client: Function Called")
     return _SingletonIdeaClient.get_client()
 
 # endregion
@@ -419,7 +419,7 @@ client   - COM Client object of IDEA, if not supplied it will create a new COM c
 Returns: Dataframe of the IDEA database
 '''
 def idea2py(database=None, client=None):
-    logging.info("idea2py: Function Called")
+    #logging.info("idea2py: Function Called")
     EMPTY = ""    
     if client is None:
         client = idea_client()        
@@ -431,7 +431,7 @@ def idea2py(database=None, client=None):
             database = client.CommonDialogs().FileExplorer()            
             if database is EMPTY:
                 msg = "You must select an IDEA database."
-                logging.warning(msg)
+                #logging.warning(msg)
                 return None
             database = database.replace('/','\\')        
     
@@ -440,7 +440,7 @@ def idea2py(database=None, client=None):
         ideaExtension = _get_db_extension()
         if ideaExtension is None:
             msg = "Error reading the IDEA Database Extension."
-            logging.error(msg)
+            #logging.error(msg)
             return None        
         database = root+ideaExtension
 
@@ -448,25 +448,25 @@ def idea2py(database=None, client=None):
         db = client.OpenDatabase(database)
     except:
         msg = f"An error occurred while opening the {database} database."
-        logging.error(msg)
+        #logging.error(msg)
         return None
 
     if db.Count == 0:
         msg = f"The {database} database has no records."
-        logging.error(msg)
+        #logging.error(msg)
         return None
-    logging.info("idea2py: Parameters verified.")      
+    #logging.info("idea2py: Parameters verified.")      
     tempDir = tempfile.TemporaryDirectory()
     tempDirPath = tempDir.name
     try:
         tempPath = _export_database_from_IDEA(db,client,tempDirPath)
-        logging.info("idea2py: IDEA Database exported to CSV.")
+        #logging.info("idea2py: IDEA Database exported to CSV.")
 
         mapping,dates,times,datefieldnames = _map_database_col_types(db,client)
-        logging.info("idea2py: IDEA column types mapped.")
+        #logging.info("idea2py: IDEA column types mapped.")
 
         dataframe = _import_csv_as_dataframe(tempPath,mapping,dates)
-        logging.info("idea2py: CSV imported as a dataframe.")
+        #logging.info("idea2py: CSV imported as a dataframe.")
 
         # convert character with date type data to datetime
         _convert_character_to_datetime(dataframe,mapping,datefieldnames)
@@ -474,22 +474,22 @@ def idea2py(database=None, client=None):
         # clean up the database
         _clean_imported_times(dataframe,times)
         _clean_imported_dates(dataframe,dates)
-        logging.info("idea2py: Converted date and time columns to proper data type.")
+        #logging.info("idea2py: Converted date and time columns to proper data type.")
 
         characters = _get_keys_by_value(mapping,object)
         _convert_characters_to_categories(dataframe,characters)
-        logging.info("idea2py: Eligible character columns converted to categories.")
+        #logging.info("idea2py: Eligible character columns converted to categories.")
 
     except Exception as e:
         msg = f"idea2py: IDEA database {database} could not be imported."
-        logging.error(msg)
+        #logging.error(msg)
         msg = f"Issue: {e}"
-        logging.error(msg)
+        #logging.error(msg)
         return None
 
     # Clean up resources
     tempDir.cleanup()
-    logging.info("idea2py: Successful")
+    #logging.info("idea2py: Successful")
     return dataframe
 
 # endregion
@@ -627,21 +627,21 @@ def _clean_dataframe_for_export(df):
 
         
         if "datetime64" in columnType:
-            logging.info(f"clean dataframe: Splitting datetime fields for column {columnName}.")
+            #logging.info(f"clean dataframe: Splitting datetime fields for column {columnName}.")
             colMaster =  pd.to_datetime(df[columnName], errors='raise')
             colDate = colMaster.dt.date
             colTime = colMaster.dt.time
             
-            logging.info(f"clean dataframe: Time number of unique values: {colTime.nunique()}.")
-            logging.info(f"clean dataframe: Time first value: {str(colTime.head(1))}.")
+            #logging.info(f"clean dataframe: Time number of unique values: {colTime.nunique()}.")
+            #logging.info(f"clean dataframe: Time first value: {str(colTime.head(1))}.")
             importTime = True
 
             if(not _is_valid_time_column(colTime)):
-                logging.info(f"clean dataframe: Checking if format of {colTime} is representing a datetime field.")
+                #logging.info(f"clean dataframe: Checking if format of {colTime} is representing a datetime field.")
                 importTime = False
             
             if importTime:
-                logging.info("clean dataframe: Setting name_DATE portion.")
+                #logging.info("clean dataframe: Setting name_DATE portion.")
                 dateHeader = f"{columnName}_DATE"
                 df.insert(col,dateHeader,colDate)
                 map[dateHeader]="date"
@@ -649,17 +649,17 @@ def _clean_dataframe_for_export(df):
                 df[dateHeader] = df[dateHeader].str.replace('NaT', '', case=False)
                 dateFields.append(dateHeader)
                 
-                logging.info("clean dataframe: Setting name_TIME portion.")
+                #logging.info("clean dataframe: Setting name_TIME portion.")
                 timeHeader = f"{columnName}_TIME"
                 df.insert(col+1,timeHeader,colTime)
                 map[timeHeader]="time"
                 df[timeHeader] = df[timeHeader].astype(str)
                 timeFields.append(timeHeader)
 
-                logging.info(f"clean dataframe: Datetime field new column name being: {columnName}")
+                #logging.info(f"clean dataframe: Datetime field new column name being: {columnName}")
                 toDrop.append(columnName)
             else:
-                logging.info(f"clean dataframe: Determined {columnName} column is not a datetime field")
+                #logging.info(f"clean dataframe: Determined {columnName} column is not a datetime field")
                 df[columnName]=colDate
                 map[columnName]="date"
                 df[columnName] = df[columnName].astype(str)
@@ -667,16 +667,16 @@ def _clean_dataframe_for_export(df):
                 dateFields.append(columnName)
         else:
             if columnType == "bool":
-                logging.info(f"clean dataframe: Converting {columnName} to parseable boolean values")
+                #logging.info(f"clean dataframe: Converting {columnName} to parseable boolean values")
                 map[columnName]= "boolean"
                 df[columnName] = np.vectorize(_clean_boolean_values)(df[columnName])
                  
             if columnType == "int8":
-                 logging.info(f"clean dataframe: Converting int8 {columnName} to parseable value")
+                 #logging.info(f"clean dataframe: Converting int8 {columnName} to parseable value")
                  map[columnName]= "multistate"
 
             if "timedelta" in columnType:
-                logging.info(f"clean dataframe: Converting timeDelta {columnName} to parseable value")
+                #logging.info(f"clean dataframe: Converting timeDelta {columnName} to parseable value")
                 map[columnName]= "time"
                 df[columnName] = df[columnName].apply(_clean_timedelta_values)
                 df[columnName] = df[columnName].astype('category')
@@ -693,23 +693,23 @@ Creates an IDEA database with the same name and data
 Returns the IDEA database object if successful
 '''
 def py2idea(dataframe, databaseName, client=None, createUniqueFile = False):
-    logging.info("py2idea: Function Called")
+    #logging.info("py2idea: Function Called")
     if client is None:
         client = idea_client()
     
     if databaseName is None:
         msg = "Missing database name."
-        logging.warning(msg)
+        #logging.warning(msg)
         return None
 
     if dataframe is None:
         msg = "Missing dataframe."
-        logging.warning(msg)
+        #logging.warning(msg)
         return None
     
     if len(dataframe) == 0:
         msg = "The dataframe has no records."
-        logging.warning(msg)
+        #logging.warning(msg)
         return None       
     
     root,ext = path.splitext(databaseName)
@@ -717,7 +717,7 @@ def py2idea(dataframe, databaseName, client=None, createUniqueFile = False):
         ideaExtension = _get_db_extension()
         if ideaExtension is None:
             msg = "Error reading the IDEA Database Extension."
-            logging.error(msg)
+            #logging.error(msg)
             return None        
         databaseName = root+ideaExtension
     
@@ -732,39 +732,39 @@ def py2idea(dataframe, databaseName, client=None, createUniqueFile = False):
             databaseName = client.UniqueFileName(databaseName)
         else:
             msg = f"IDEA database {databaseName} already exists"
-            logging.error(msg)
+            #logging.error(msg)
             return None
     
     tempDir = tempfile.TemporaryDirectory()
     tempPath = tempDir.name
-    logging.info("py2idea: Parameters verified")
+    #logging.info("py2idea: Parameters verified")
     try: 
         dataframe,mapping,dateFields,timeFields = _clean_dataframe_for_export(dataframe)
-        logging.info("py2idea: Dataframe values cleaned for export.")
+        #logging.info("py2idea: Dataframe values cleaned for export.")
         csvPath = _export_dataframe_to_csv(dataframe,tempPath)
         db = _import_csv_into_idea(csvPath,tempPath,databaseName,client,dataframe,dateFields,timeFields)
-        logging.info("py2idea: CSV imported into IDEA.")
+        #logging.info("py2idea: CSV imported into IDEA.")
 
     except Exception as e:
         msg = f"py2idea: IDEA database {databaseName} could not be created."
-        logging.error(msg)
+        #logging.error(msg)
         msg = f"Issue: {e}"
-        logging.error(msg)
+        #logging.error(msg)
         return None
     
     tempDir.cleanup()
-    logging.info("py2idea: Successful")
+    #logging.info("py2idea: Successful")
     return db
 # endregion
 
 # region IDEA Client Functions
 
 def refresh_file_explorer(client=None):
-    logging.info("RefreshFileExplorer: Function Called")
+    #logging.info("RefreshFileExplorer: Function Called")
     if client is None:
         client = idea_client()
     client.RefreshFileExplorer()
-    logging.info("RefreshFileExplorer: Successful")
+    #logging.info("RefreshFileExplorer: Successful")
 
 
 # endregion
@@ -792,7 +792,7 @@ def _file_is_invalid(file):
     return (file in FILEFILTER) or (file[0] in PREFIXFILTER)
 
 def project_files():    
-    logging.info("ProjectFiles: Function Called")
+    #logging.info("ProjectFiles: Function Called")
     projectFiles = []
     directory = _get_working_directory() 
 
@@ -806,9 +806,9 @@ def project_files():
             filepath = path.join(folder,f)
             projectFiles.append(filepath)
 
-    logging.info("ProjectFiles: Successful")
+    #logging.info("ProjectFiles: Successful")
     return projectFiles
 
 # endregion
-logging.info("")
-logging.info("----IDEALib.py Loaded----")
+#logging.info("")
+#logging.info("----IDEALib.py Loaded----")

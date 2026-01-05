@@ -10,6 +10,7 @@ from pathlib import Path
 from tkinter import messagebox
 
 import pandas as pd
+import time
 
 import IDEALib as idea
 
@@ -25,7 +26,7 @@ def save_to_idea(final_output_path: Path, today_date: str):
                           If None, uses console input().
     """
     project_name = "חשבונות_מוגבלים"
-    
+
     try:
         # Initialize client once
         client = idea.idea_client()
