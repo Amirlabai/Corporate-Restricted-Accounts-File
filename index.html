@@ -256,6 +256,127 @@
             margin: 20px 0;
         }
 
+        .help-button {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 2px solid white;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            font-size: 20px;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+        }
+
+        .help-button:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: scale(1.1);
+        }
+
+        .header {
+            position: relative;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            overflow: auto;
+        }
+
+        .modal-content {
+            background-color: #fefefe;
+            margin: 5% auto;
+            padding: 0;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 800px;
+            max-height: 85vh;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .modal-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px 30px;
+            border-radius: 15px 15px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h2 {
+            margin: 0;
+            font-size: 1.8em;
+        }
+
+        .close {
+            color: white;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            line-height: 1;
+            transition: transform 0.2s;
+        }
+
+        .close:hover {
+            transform: scale(1.2);
+        }
+
+        .modal-body {
+            padding: 30px;
+            overflow-y: auto;
+            flex: 1;
+            direction: rtl;
+        }
+
+        .help-section {
+            margin-bottom: 30px;
+        }
+
+        .help-section h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 1.4em;
+            border-bottom: 2px solid #e9ecef;
+            padding-bottom: 10px;
+        }
+
+        .help-section p {
+            margin-bottom: 10px;
+            line-height: 1.6;
+            color: #495057;
+        }
+
+        .help-section ul {
+            margin-right: 20px;
+            margin-bottom: 15px;
+        }
+
+        .help-section li {
+            margin-bottom: 8px;
+            line-height: 1.6;
+            color: #495057;
+        }
+
+        .help-section strong {
+            color: #667eea;
+        }
+
         @media (max-width: 768px) {
             .search-form {
                 flex-direction: column;
@@ -274,8 +395,9 @@
 <body>
     <div class="container">
         <div class="header">
+            <button class="help-button" onclick="openHelpModal()" title="עזרה">?</button>
             <h1>חיפוש חשבונות מוגבלים</h1>
-            <p>Restricted Accounts Database Search</p>
+            <p id="updateDate">מעודכן לתאריך <span id="currentDate"></span> לשעה 06:00</p>
         </div>
 
         <div class="search-section">
@@ -345,6 +467,95 @@
 
             <div id="noResults" class="no-results" style="display: none;">
                 לא נמצאו תוצאות
+            </div>
+        </div>
+    </div>
+
+    <!-- Help Modal -->
+    <div id="helpModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>עזרה - חיפוש חשבונות מוגבלים</h2>
+                <span class="close" onclick="closeHelpModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="help-section">
+                    <h3>תיאור כללי</h3>
+                    <p>אפליקציה זו מיועדת לחיפוש בנתוני חשבונות מוגבלים מבנק ישראל.</p>
+                    <p>האפליקציה טוענת אוטומטית את הקובץ העדכני ביותר ממאגר אינטרנטי ומאפשרת חיפוש לפי מספר חשבון ותאריך סיום הגבלה.</p>
+                </div>
+
+                <div class="help-section">
+                    <h3>חיפוש לפי מספר חשבון</h3>
+                    <p><strong>שדה: מספר חשבון מוגבל</strong></p>
+                    <p>מאפשר חיפוש לפי מספר חשבון מוגבל.</p>
+                    <p><strong>אופן השימוש:</strong></p>
+                    <ul>
+                        <li>הזן חלק או את כל מספר החשבון בשדה החיפוש</li>
+                        <li>החיפוש מתבצע אוטומטית תוך כדי הקלדה</li>
+                        <li>ניתן לחפש גם חלק ממספר החשבון</li>
+                    </ul>
+                    <p><strong>דוגמאות:</strong></p>
+                    <ul>
+                        <li>הזנת "123" תמצא כל החשבונות המכילים את המספר 123</li>
+                        <li>הזנת מספר חשבון מלא תמצא התאמה מדויקת</li>
+                    </ul>
+                </div>
+
+                <div class="help-section">
+                    <h3>חיפוש לפי תאריך</h3>
+                    <p><strong>תיאור:</strong> מאפשר חיפוש לפי תאריך סיום הגבלה</p>
+                    <p><strong>שדות תאריך:</strong></p>
+                    <p>התאריך מוזן בשלושה שדות נפרדים:</p>
+                    <ul>
+                        <li>שדה שנה (yyyy) - מימין</li>
+                        <li>שדה חודש (mm) - באמצע</li>
+                        <li>שדה יום (dd) - משמאל</li>
+                    </ul>
+                    <p><strong>אופן השימוש:</strong></p>
+                    <ul>
+                        <li>הזן את היום (1-31), החודש (1-12) והשנה (4 ספרות)</li>
+                        <li>החיפוש ימצא כל החשבונות עם תאריך סיום הגבלה שווה או מאוחר יותר מהתאריך שהוזן</li>
+                        <li>ניתן להזין תאריך חלקי (רק שנה, או שנה וחודש)</li>
+                    </ul>
+                </div>
+
+                <div class="help-section">
+                    <h3>תכונות הטבלה</h3>
+                    <p>הטבלה מציגה את התוצאות עם העמודות הבאות:</p>
+                    <ul>
+                        <li><strong>שם סניף</strong> - שם הסניף של החשבון המוגבל</li>
+                        <li><strong>תאריך סיום הגבלה</strong> - התאריך שבו מסתיימת ההגבלה</li>
+                        <li><strong>מספר חשבון מוגבל</strong> - מספר החשבון המוגבל המלא</li>
+                        <li><strong>מספר סניף</strong> - מספר הסניף של החשבון המוגבל</li>
+                        <li><strong>מספר בנק</strong> - מספר הבנק של החשבון המוגבל</li>
+                        <li><strong>שם בנק</strong> - שם הבנק של החשבון המוגבל</li>
+                    </ul>
+                    <p><strong>סינון עמודות:</strong></p>
+                    <p>בשורה השנייה של הטבלה ניתן להזין טקסט לסינון בכל עמודה. הסינון מתבצע אוטומטית תוך כדי הקלדה.</p>
+                    <p><strong>מיון:</strong></p>
+                    <p>לחיצה על כותרת עמודה תמיין את הטבלה לפי אותה עמודה. לחיצה נוספת תהפוך את כיוון המיון.</p>
+                </div>
+
+                <div class="help-section">
+                    <h3>הורדת תוצאות</h3>
+                    <p>לאחר ביצוע חיפוש, מופיעים כפתורי הורדה:</p>
+                    <ul>
+                        <li><strong>הורד מסונן (CSV)</strong> - מוריד רק את התוצאות המוצגות בטבלה (לאחר סינון)</li>
+                        <li><strong>הורד הכל (CSV)</strong> - מוריד את כל הנתונים מהקובץ</li>
+                    </ul>
+                </div>
+
+                <div class="help-section">
+                    <h3>טיפים לשימוש</h3>
+                    <ul>
+                        <li>אם אתה מחפש חשבון ספציפי, הזן את מספר החשבון המלא לחיפוש מדויק יותר</li>
+                        <li>לחיפוש לפי תאריך, הזן את התאריך המלא (יום/חודש/שנה) לחיפוש מדויק</li>
+                        <li>ניתן לשלב חיפוש לפי מספר חשבון ותאריך יחד לחיפוש ממוקד יותר</li>
+                        <li>התוצאות מתעדכנות אוטומטית תוך כדי הקלדה, אין צורך ללחוץ על כפתור החיפוש</li>
+                        <li>ניתן להשתמש בסינון העמודות יחד עם חיפוש ראשוני לחיפוש מתקדם יותר</li>
+                    </ul>
+                </div>
             </div>
         </div>
     </div>
@@ -808,8 +1019,38 @@
             this.value = this.value.replace(/[^0-9]/g, '');
         });
 
+        // Help modal functions
+        function openHelpModal() {
+            document.getElementById('helpModal').style.display = 'block';
+        }
+
+        function closeHelpModal() {
+            document.getElementById('helpModal').style.display = 'none';
+        }
+
+        // Close modal when clicking outside of it
+        window.onclick = function(event) {
+            const modal = document.getElementById('helpModal');
+            if (event.target === modal) {
+                closeHelpModal();
+            }
+        }
+
+        // Update current date display
+        function updateCurrentDate() {
+            const today = new Date();
+            const day = String(today.getDate()).padStart(2, '0');
+            const month = String(today.getMonth() + 1).padStart(2, '0');
+            const year = today.getFullYear();
+            const dateStr = `${day}/${month}/${year}`;
+            document.getElementById('currentDate').textContent = dateStr;
+        }
+
         // Load data on page load
-        window.addEventListener('DOMContentLoaded', loadData);
+        window.addEventListener('DOMContentLoaded', function() {
+            updateCurrentDate();
+            loadData();
+        });
     </script>
 </body>
 </html>
