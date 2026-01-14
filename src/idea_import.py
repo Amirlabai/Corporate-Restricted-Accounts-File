@@ -6,12 +6,12 @@ __author__ = "Amir Labai"
 __copyright__ = "Copyright 2025, Amir Labai"
 __license__ = "MIT"
 
-from pathlib import Path
 from tkinter import messagebox
-
-import pandas as pd
+from pathlib import Path
 
 import IDEALib as idea
+import pandas as pd
+import locale
 
 
 
@@ -24,7 +24,13 @@ def save_to_idea(final_output_path: Path, today_date: str):
         ask_user_callback: Optional callback function that returns True/False for yes/no question.
                           If None, uses console input().
     """
-    project_name = "חשבונות_מוגבלים"
+    lang, _ = locale.getdefaultlocale()
+    is_hebrew = lang is not None and lang.lower().startswith("he")
+
+    if idea.idea_encoding() != "ASCII" or is_hebrew:
+        project_name = "חשבונות_מוגבלים"
+    else:
+        project_name = "restricted_accounts"
     
     try:
         # Initialize client once
@@ -51,7 +57,7 @@ def save_to_idea(final_output_path: Path, today_date: str):
 
         # Perform the impor
         df = pd.read_csv(final_output_path, encoding='utf-8-sig')
-        idea.py2idea(df, f"חשבונות_מוגבלים_{today_date}")
+        idea.py2idea(df, f"{project_name}_{today_date}")
         return("success: Import successful.")
     
     except Exception as e:
